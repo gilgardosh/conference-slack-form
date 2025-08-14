@@ -11,6 +11,8 @@ import {
 } from './utils';
 import { validateAndSanitize } from './utils/validation';
 import { checkIpRateLimit, checkEmailRateLimit } from './lib/rateLimiter';
+import { createSlackClient } from './lib/slack';
+import { sendWelcomeEmail } from './lib/email';
 
 // Create router instance
 const router = Router();
@@ -53,11 +55,45 @@ router.post('/api/submit', async (request: Request, env: Env): Promise<Response>
                      request.headers.get('X-Forwarded-For') || 
                      'unknown';
 
+    // Parse request body first
+    let body: unknown;
+    
+    try {
+      body = await request.json();
+    } catch (error) {
+      return errorResponse(
+        'INVALID_JSON',
+        'Invalid JSON in request body',
+        400
+      );
+    }
+
+    // 1. Validate and sanitize input
+    const validationResult = validateAndSanitize(body);
+    
+    if (!validationResult.ok) {
+      return new Response(JSON.stringify({
+        ok: false,
+        code: 'VALIDATION_ERROR',
+        message: 'Validation failed',
+        errors: validationResult.errors
+      }), {
+        status: 422,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
+      });
+    }
+
+    const { email, sanitizedCompanyName } = validationResult.value;
+
     // Get rate limit settings from environment with defaults
     const rateLimit = parseInt(env.RATE_LIMIT || '10', 10);
     const rateLimitWindowSec = parseInt(env.RATE_LIMIT_WINDOW_SEC || '3600', 10); // 1 hour default
 
-    // Check IP rate limit first
+    // 3. Rate-limit checks
+    // Check IP rate limit
     const ipRateLimit = checkIpRateLimit(clientIP, rateLimit, rateLimitWindowSec);
     if (!ipRateLimit.allowed) {
       return new Response(JSON.stringify({
@@ -80,39 +116,8 @@ router.post('/api/submit', async (request: Request, env: Env): Promise<Response>
       });
     }
 
-    // Parse request body
-    let body: unknown;
-    
-    try {
-      body = await request.json();
-    } catch (error) {
-      return errorResponse(
-        'INVALID_JSON',
-        'Invalid JSON in request body',
-        400
-      );
-    }
-
-    // Validate and sanitize input
-    const validationResult = validateAndSanitize(body);
-    
-    if (!validationResult.ok) {
-      return new Response(JSON.stringify({
-        ok: false,
-        code: 'VALIDATION_ERROR',
-        message: 'Validation failed',
-        errors: validationResult.errors
-      }), {
-        status: 422,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
-      });
-    }
-
-    // Check email rate limit after validation
-    const emailRateLimit = checkEmailRateLimit(validationResult.value.email, rateLimit, rateLimitWindowSec);
+    // Check email rate limit
+    const emailRateLimit = checkEmailRateLimit(email, rateLimit, rateLimitWindowSec);
     if (!emailRateLimit.allowed) {
       return new Response(JSON.stringify({
         ok: false,
@@ -134,14 +139,99 @@ router.post('/api/submit', async (request: Request, env: Env): Promise<Response>
       });
     }
 
-    // Generate response with validated and sanitized data
+    // Generate submission ID
     const submissionId = generateId();
 
-    const response: FormSubmissionResponse = {
+    // Initialize Slack client
+    const slackClient = createSlackClient(
+      env.SLACK_BOT_TOKEN,
+      env.SLACK_TEAM_ID,
+      env.SLACK_LOG_CHANNEL_ID
+    );
+
+    // 4. Create Slack channel
+    const channelResult = await slackClient.createChannel(sanitizedCompanyName);
+    if (!channelResult.ok) {
+      // Log error and return 502
+      await slackClient.logToChannel(
+        `Channel creation failed for ${sanitizedCompanyName}: ${channelResult.error} - ${channelResult.details || ''}`,
+        'error'
+      );
+      
+      return errorResponse(
+        'SLACK_ERROR',
+        'Failed to create Slack channel',
+        502
+      );
+    }
+
+    const { channelId, channelName } = channelResult;
+    
+    // Track errors for partial success scenarios
+    let groupInviteError = false;
+    let guestInviteError = false;
+    let emailSent = true;
+
+    // 5. Invite @guild group
+    const groupInviteResult = await slackClient.inviteGroup(channelId);
+    if (!groupInviteResult.ok) {
+      groupInviteError = true;
+      await slackClient.logToChannel(
+        `Group invite failed for channel ${channelName} (${channelId}): ${groupInviteResult.error} - ${groupInviteResult.details || ''}`,
+        'warn'
+      );
+    }
+
+    // 6. Invite single-channel guest
+    const guestInviteResult = await slackClient.inviteGuest(email, channelId);
+    if (!guestInviteResult.ok) {
+      guestInviteError = true;
+      await slackClient.logToChannel(
+        `Guest invite failed for ${email} to channel ${channelName} (${channelId}): ${guestInviteResult.error} - ${guestInviteResult.details || ''}`,
+        'warn'
+      );
+    }
+
+    // 7. Send Postmark email
+    const channelUrl = `https://app.slack.com/client/${env.SLACK_TEAM_ID}/${channelId}`;
+    const emailResult = await sendWelcomeEmail({
+      companyName: validationResult.value.companyName,
+      email,
+      channelName,
+      channelUrl,
+    }, env.POSTMARK_API_KEY);
+
+    if (!emailResult.ok) {
+      emailSent = false;
+      await slackClient.logToChannel(
+        `Email sending failed for ${email}: ${emailResult.error}`,
+        'warn'
+      );
+    }
+
+    // 8. Log success (with any partial failures noted)
+    const partialFailures = [];
+    if (groupInviteError) partialFailures.push('group invite');
+    if (guestInviteError) partialFailures.push('guest invite');
+    if (!emailSent) partialFailures.push('email');
+
+    const logMessage = partialFailures.length > 0
+      ? `Submission processed for ${email} (company: ${validationResult.value.companyName} -> ${sanitizedCompanyName}), channel: ${channelName} (${channelId}). Partial failures: ${partialFailures.join(', ')}`
+      : `Submission successfully processed for ${email} (company: ${validationResult.value.companyName} -> ${sanitizedCompanyName}), channel: ${channelName} (${channelId})`;
+
+    await slackClient.logToChannel(logMessage, partialFailures.length > 0 ? 'warn' : 'info');
+
+    // 9. Return success response (include emailSent flag if false)
+    const response: FormSubmissionResponse & { slackChannelId: string; emailSent?: boolean } = {
       ok: true,
       id: submissionId,
-      sanitizedCompanyName: validationResult.value.sanitizedCompanyName,
+      sanitizedCompanyName,
+      slackChannelId: channelId,
     };
+
+    if (!emailSent) {
+      response.emailSent = false;
+    }
 
     return jsonResponse(response, 200, {
       'X-RateLimit-Limit': rateLimit.toString(),
@@ -152,6 +242,23 @@ router.post('/api/submit', async (request: Request, env: Env): Promise<Response>
 
   } catch (error) {
     console.error('Unexpected error in /api/submit:', error);
+    
+    // Try to log to Slack if we have the environment variables
+    try {
+      if (env.SLACK_BOT_TOKEN && env.SLACK_LOG_CHANNEL_ID) {
+        const slackClient = createSlackClient(
+          env.SLACK_BOT_TOKEN,
+          env.SLACK_TEAM_ID,
+          env.SLACK_LOG_CHANNEL_ID
+        );
+        await slackClient.logToChannel(
+          `Internal server error in /api/submit: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          'error'
+        );
+      }
+    } catch (logError) {
+      console.error('Failed to log error to Slack:', logError);
+    }
     
     return errorResponse(
       'INTERNAL_ERROR',

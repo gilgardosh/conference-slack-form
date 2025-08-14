@@ -25,6 +25,8 @@ export interface FormSubmissionResponse {
   ok: true;
   id: string;
   sanitizedCompanyName: string;
+  slackChannelId?: string;
+  emailSent?: boolean;
 }
 
 /**
