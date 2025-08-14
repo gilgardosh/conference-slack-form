@@ -19,20 +19,38 @@ export interface FormSubmissionRequest {
 }
 
 /**
+ * Form submission response
+ */
+export interface FormSubmissionResponse {
+  ok: true;
+  id: string;
+  sanitizedCompanyName: string;
+}
+
+/**
  * API response types
  */
 export interface ApiSuccessResponse<T = unknown> {
   ok: true;
-  data: T;
+  data?: T;
 }
 
 export interface ApiErrorResponse {
   ok: false;
   errorCode: string;
   message: string;
+  metadata?: Record<string, unknown>;
 }
 
 export type ApiResponse<T = unknown> = ApiSuccessResponse<T> | ApiErrorResponse;
+
+/**
+ * Ping response
+ */
+export interface PingResponse {
+  ok: true;
+  version: string;
+}
 
 /**
  * Rate limiter types

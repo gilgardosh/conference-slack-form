@@ -4,17 +4,20 @@
   "description": "Cloudflare Worker for conference Slack form backend",
   "main": "src/index.ts",
   "scripts": {
-    "dev": "wrangler dev",
+    "dev": "wrangler dev src/index.ts",
     "build": "wrangler build",
+    "preview": "wrangler dev --local",
+    "test": "vitest",
     "deploy": "wrangler deploy",
-    "start": "wrangler dev --local",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "itty-router": "^5.0.22",
     "zod": "^3.21.4"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20230710.0",
-    "wrangler": "^3.1.0"
+    "vitest": "^0.34.0",
+    "wrangler": "^4.29.1"
   }
 }

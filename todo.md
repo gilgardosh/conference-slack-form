@@ -5,6 +5,7 @@
 **✅ COMPLETED:**
 - **Milestone 0**: Full repository setup with TypeScript, Yarn workspaces, ESLint, Prettier, Vitest
 - **Milestone 1**: Worker API scaffolding with basic routes and structured error handling
+- **Milestone 2**: Validation & Sanitization (Zod schemas, company name sanitization, utilities, unit tests)
 
 **🚧 PARTIALLY COMPLETED:**
 - **Milestone 6**: Basic React SPA scaffold (needs form components)
@@ -12,7 +13,7 @@
 - **Milestone 9**: Initial deliverables documentation created
 
 **🎯 NEXT UP:**
-- **Milestone 2**: Validation & Sanitization (company name sanitization, email validation)
+- **Milestone 3**: Slack Module (channel creation, invites, logging)
 
 ---
 
@@ -44,21 +45,28 @@
 * [x] Define environment variable types in `types.ts`
 * [x] Add `wrangler.toml` and build scripts
 * [x] Ensure structured error handling (`{ok:false,errorCode,message}`)
+* [x] Fix wrangler dev server configuration and router export
+* [x] Add utility functions (UUID generation, JSON responses, error handling)
+* [x] Implement CORS support and static file serving placeholder
+* [x] Create comprehensive unit tests for worker logic
 
 ---
 
-## ✅ Milestone 2 — Validation & Sanitization
+## ✅ Milestone 2 — Validation & Sanitization (COMPLETED)
 
-* [ ] Implement Zod schema for form inputs: `{companyName:string, email:string}`
-* [ ] Implement `sanitizeCompanyName()` with rules:
+* [x] Implement Zod schema for form inputs: `{companyName:string, email:string}`
+* [x] Implement `sanitizeCompanyName()` with rules:
 
   * lowercase, remove accents, spaces → dashes
   * remove emojis/non-latin symbols
   * collapse multiple dashes, trim edges, truncate to 67 chars
-* [ ] Implement `validateAndSanitize()` function returning `{ok,value}` or `{ok:false,errors}`
-* [ ] Implement `isFreeEmailDomain(email)` helper
-* [ ] Unit tests for sanitization and validation edge cases
-* [ ] Integrate with `/api/submit` stub
+* [x] Implement `validateAndSanitize()` function returning `{ok,value}` or `{ok:false,errors}`
+* [x] Implement `isFreeEmailDomain(email)` helper
+* [x] Unit tests for sanitization and validation edge cases
+* [x] Integrate with `/api/submit` stub
+* [x] Wrangler dev server configuration and debugging
+* [x] Endpoint validation with curl testing
+* [x] Shell script for automated endpoint testing
 
 ---
 

@@ -189,15 +189,6 @@ router.get('*', (request: Request): Response => {
  */
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    try {
-      return await router.fetch(request, env);
-    } catch (error) {
-      console.error('Router error:', error);
-      return errorResponse(
-        'INTERNAL_ERROR',
-        'Internal server error',
-        500
-      );
-    }
+    return router.handle(request, env);
   },
 };

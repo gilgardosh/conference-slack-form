@@ -1,0 +1,5 @@
+{
+  "name": "conference-slack-form-worker",
+  "compatibility_date": "2025-08-14",
+  "main": "src/index.ts"
+}
