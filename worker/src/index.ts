@@ -45,6 +45,61 @@ router.get('/api/ping', (): Response => {
 });
 
 /**
+ * Sanitization preview endpoint
+ * POST /api/sanitize-preview
+ */
+router.post('/api/sanitize-preview', async (request: Request): Promise<Response> => {
+  try {
+    // Parse request body
+    let body: unknown;
+    
+    try {
+      body = await request.json();
+    } catch (error) {
+      return errorResponse(
+        'INVALID_JSON',
+        'Invalid JSON in request body',
+        400
+      );
+    }
+
+    // Validate and sanitize input (without rate limit increment)
+    const validationResult = validateAndSanitize(body);
+    
+    if (!validationResult.ok) {
+      return new Response(JSON.stringify({
+        ok: false,
+        code: 'VALIDATION_ERROR',
+        message: 'Validation failed',
+        errors: validationResult.errors
+      }), {
+        status: 422,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
+      });
+    }
+
+    const { sanitizedCompanyName } = validationResult.value;
+
+    return jsonResponse({
+      ok: true,
+      sanitizedCompanyName,
+    });
+
+  } catch (error) {
+    console.error('Unexpected error in /api/sanitize-preview:', error);
+    
+    return errorResponse(
+      'INTERNAL_ERROR',
+      'Internal server error',
+      500
+    );
+  }
+});
+
+/**
  * Form submission endpoint
  * POST /api/submit
  */

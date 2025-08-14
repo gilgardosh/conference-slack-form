@@ -4848,6 +4848,47 @@ router.get("/api/ping", () => {
   };
   return jsonResponse(response);
 });
+router.post("/api/sanitize-preview", async (request) => {
+  try {
+    let body;
+    try {
+      body = await request.json();
+    } catch (error) {
+      return errorResponse(
+        "INVALID_JSON",
+        "Invalid JSON in request body",
+        400
+      );
+    }
+    const validationResult = validateAndSanitize(body);
+    if (!validationResult.ok) {
+      return new Response(JSON.stringify({
+        ok: false,
+        code: "VALIDATION_ERROR",
+        message: "Validation failed",
+        errors: validationResult.errors
+      }), {
+        status: 422,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*"
+        }
+      });
+    }
+    const { sanitizedCompanyName } = validationResult.value;
+    return jsonResponse({
+      ok: true,
+      sanitizedCompanyName
+    });
+  } catch (error) {
+    console.error("Unexpected error in /api/sanitize-preview:", error);
+    return errorResponse(
+      "INTERNAL_ERROR",
+      "Internal server error",
+      500
+    );
+  }
+});
 router.post("/api/submit", async (request, env) => {
   try {
     const clientIP = request.headers.get("CF-Connecting-IP") || request.headers.get("X-Forwarded-For") || "unknown";
@@ -5117,7 +5158,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// .wrangler/tmp/bundle-UEjV50/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-f6vt9q/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -5149,7 +5190,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-UEjV50/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-f6vt9q/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
