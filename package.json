@@ -1,0 +1,38 @@
+{
+  "name": "conference-slack-form",
+  "version": "0.1.0",
+  "description": "React SPA served via Cloudflare Worker for conference client onboarding to Slack channels",
+  "private": true,
+  "workspaces": [
+    "worker",
+    "client"
+  ],
+  "scripts": {
+    "dev": "echo 'Starting development servers...' && echo 'Run client dev: yarn workspace conference-slack-form-client dev' && echo 'Run worker dev: yarn workspace conference-slack-form-worker dev' && echo 'Note: Start each service in separate terminals'",
+    "dev:client": "yarn workspace conference-slack-form-client dev",
+    "dev:worker": "yarn workspace conference-slack-form-worker dev",
+    "build": "yarn workspace conference-slack-form-client build && yarn workspace conference-slack-form-worker build",
+    "start": "yarn workspace conference-slack-form-worker start",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "format": "prettier --write .",
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.45.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "jsdom": "^22.1.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.1.6",
+    "vitest": "^0.34.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+}

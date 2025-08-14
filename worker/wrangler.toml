@@ -1,0 +1,17 @@
+name = "conference-slack-form-worker"
+main = "src/index.ts"
+compatibility_date = "2023-07-10"
+
+[env.development]
+name = "conference-slack-form-worker-dev"
+
+[env.production]
+name = "conference-slack-form-worker"
+
+# Environment variables (set via wrangler secret put)
+# SLACK_BOT_TOKEN
+# SLACK_TEAM_ID  
+# SLACK_LOG_CHANNEL_ID
+# POSTMARK_API_KEY
+# RATE_LIMIT
+# RATE_LIMIT_WINDOW_SEC

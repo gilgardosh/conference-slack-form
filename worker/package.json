@@ -1,0 +1,20 @@
+{
+  "name": "conference-slack-form-worker",
+  "version": "0.1.0",
+  "description": "Cloudflare Worker for conference Slack form backend",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "wrangler build",
+    "deploy": "wrangler deploy",
+    "start": "wrangler dev --local",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.21.4"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20230710.0",
+    "wrangler": "^3.1.0"
+  }
+}
