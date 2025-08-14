@@ -42,6 +42,14 @@ export interface ApiErrorResponse {
   metadata?: Record<string, unknown>;
 }
 
+export interface RateLimitErrorResponse extends ApiErrorResponse {
+  errorCode: 'rate_limit';
+  metadata: {
+    type: 'ip' | 'email';
+    remaining: number;
+  };
+}
+
 export type ApiResponse<T = unknown> = ApiSuccessResponse<T> | ApiErrorResponse;
 
 /**

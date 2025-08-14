@@ -10,6 +10,7 @@ import {
   errorResponse, 
 } from './utils';
 import { validateAndSanitize } from './utils/validation';
+import { checkIpRateLimit, checkEmailRateLimit } from './lib/rateLimiter';
 
 // Create router instance
 const router = Router();
@@ -45,8 +46,40 @@ router.get('/api/ping', (): Response => {
  * Form submission endpoint
  * POST /api/submit
  */
-router.post('/api/submit', async (request: Request): Promise<Response> => {
+router.post('/api/submit', async (request: Request, env: Env): Promise<Response> => {
   try {
+    // Get client IP address
+    const clientIP = request.headers.get('CF-Connecting-IP') || 
+                     request.headers.get('X-Forwarded-For') || 
+                     'unknown';
+
+    // Get rate limit settings from environment with defaults
+    const rateLimit = parseInt(env.RATE_LIMIT || '10', 10);
+    const rateLimitWindowSec = parseInt(env.RATE_LIMIT_WINDOW_SEC || '3600', 10); // 1 hour default
+
+    // Check IP rate limit first
+    const ipRateLimit = checkIpRateLimit(clientIP, rateLimit, rateLimitWindowSec);
+    if (!ipRateLimit.allowed) {
+      return new Response(JSON.stringify({
+        ok: false,
+        errorCode: 'rate_limit',
+        message: 'Rate limit exceeded',
+        metadata: {
+          type: 'ip',
+          remaining: ipRateLimit.remaining
+        }
+      }), {
+        status: 429,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'X-RateLimit-Limit': rateLimit.toString(),
+          'X-RateLimit-Remaining': ipRateLimit.remaining.toString(),
+          'X-RateLimit-Reset': Math.ceil(ipRateLimit.resetAt / 1000).toString(),
+        },
+      });
+    }
+
     // Parse request body
     let body: unknown;
     
@@ -78,6 +111,29 @@ router.post('/api/submit', async (request: Request): Promise<Response> => {
       });
     }
 
+    // Check email rate limit after validation
+    const emailRateLimit = checkEmailRateLimit(validationResult.value.email, rateLimit, rateLimitWindowSec);
+    if (!emailRateLimit.allowed) {
+      return new Response(JSON.stringify({
+        ok: false,
+        errorCode: 'rate_limit',
+        message: 'Rate limit exceeded',
+        metadata: {
+          type: 'email',
+          remaining: emailRateLimit.remaining
+        }
+      }), {
+        status: 429,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'X-RateLimit-Limit': rateLimit.toString(),
+          'X-RateLimit-Remaining': emailRateLimit.remaining.toString(),
+          'X-RateLimit-Reset': Math.ceil(emailRateLimit.resetAt / 1000).toString(),
+        },
+      });
+    }
+
     // Generate response with validated and sanitized data
     const submissionId = generateId();
 
@@ -87,7 +143,12 @@ router.post('/api/submit', async (request: Request): Promise<Response> => {
       sanitizedCompanyName: validationResult.value.sanitizedCompanyName,
     };
 
-    return jsonResponse(response);
+    return jsonResponse(response, 200, {
+      'X-RateLimit-Limit': rateLimit.toString(),
+      'X-RateLimit-Remaining-IP': ipRateLimit.remaining.toString(),
+      'X-RateLimit-Remaining-Email': emailRateLimit.remaining.toString(),
+      'X-RateLimit-Reset': Math.ceil(Math.max(ipRateLimit.resetAt, emailRateLimit.resetAt) / 1000).toString(),
+    });
 
   } catch (error) {
     console.error('Unexpected error in /api/submit:', error);

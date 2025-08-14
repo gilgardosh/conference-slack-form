@@ -1,6 +1,6 @@
 # TODO.md — Conference Slack Channel Form App
 
-## 📈 Current Progress Su* [x] All tests passing (80 total tests) including new email service and existing worker testsmary
+## 📈 Current Progress Summary
 
 **✅ COMPLETED:**
 - **Milestone 0**: Full repository setup with TypeScript, Yarn workspaces, ESLint, Prettier, Vitest
@@ -8,6 +8,7 @@
 - **Milestone 2**: ✅ **FULLY COMPLETED** - Validation & Sanitization with comprehensive Zod schemas, company name sanitization, unit tests (45/45 passing), and live API integration
 - **Milestone 3**: ✅ **FULLY COMPLETED** - Slack Module with comprehensive API wrapper, channel creation with collision handling, team/guest invitations, logging, rate limit handling, and 19 passing unit tests
 - **Milestone 4**: ✅ **FULLY COMPLETED** - Postmark Email Module with welcome email functionality, HTML/text templates, PII protection, comprehensive unit tests (13 test cases), and integration examples
+- **Milestone 5**: ✅ **FULLY COMPLETED** - Rate Limiter with in-memory Map-based storage, IP and email tracking, comprehensive testing (35 tests), and full `/api/submit` integration
 
 **🚧 PARTIALLY COMPLETED:**
 - **Milestone 6**: Basic React SPA scaffold (needs form components)
@@ -15,7 +16,7 @@
 - **Milestone 9**: Initial deliverables documentation created
 
 **🎯 NEXT UP:**
-- **Milestone 5**: Rate Limiter (in-memory with IP and email tracking)
+- **Milestone 6**: Frontend UI components and form implementation
 
 ---
 
@@ -112,13 +113,24 @@
 
 ---
 
-## ⏱ Milestone 5 — Rate Limiter
+## ⏱ Milestone 5 — Rate Limiter (COMPLETED)
 
-* [ ] Implement in-memory rate-limiter (`Map`) per IP and per email
-* [ ] Expose `checkAndIncrement(key, limit, windowSec)` function
-* [ ] Wire into `/api/submit` (return 429 if blocked)
-* [ ] Unit tests for bursts, expiry, and limit enforcement
-* [ ] Document limitations for multi-instance deployments
+* [x] Implement in-memory rate-limiter (`Map`) per IP and per email
+* [x] Expose `checkAndIncrement(key, limit, windowSec)` function
+* [x] Wire into `/api/submit` (return 429 if blocked)
+* [x] Unit tests for bursts, expiry, and limit enforcement
+* [x] Document limitations for multi-instance deployments
+* [x] Comprehensive implementation with:
+  * In-memory Map-based rate limiter with proper time window handling
+  * `checkIpRateLimit()` and `checkEmailRateLimit()` helper functions
+  * Integration into `/api/submit` with IP checked first, email after validation
+  * 429 responses with exact format: `{ok:false, errorCode:"rate_limit", message:"Rate limit exceeded", metadata:{type:'ip'|'email', remaining:0}}`
+  * Rate limit headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining-IP/Email`, `X-RateLimit-Reset`
+  * 21 unit tests covering basic functionality, burst handling, time expiry, edge cases
+  * 14 integration tests verifying real HTTP endpoint behavior
+  * Environment configuration via `RATE_LIMIT` and `RATE_LIMIT_WINDOW_SEC`
+  * Comprehensive documentation with usage examples and production limitations
+  * All 115 worker tests passing (35 rate limiter + 80 existing)
 
 ---
 
