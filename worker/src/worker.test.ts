@@ -3,9 +3,9 @@ import type { Env } from './types';
 import { 
   generateId, 
   jsonResponse, 
-  errorResponse, 
-  sanitizeCompanyNamePreview 
+  errorResponse
 } from './utils';
+import { sanitizeCompanyName } from './utils/validation';
 
 // Mock environment
 const mockEnv: Env = {
@@ -31,21 +31,21 @@ describe('Worker Utils', () => {
     });
   });
 
-  describe('sanitizeCompanyNamePreview', () => {
+  describe('sanitizeCompanyName', () => {
     it('should convert to lowercase and replace spaces with hyphens', () => {
-      expect(sanitizeCompanyNamePreview('Test Company')).toBe('test-company');
+      expect(sanitizeCompanyName('Test Company')).toBe('test-company');
     });
 
     it('should remove special characters except hyphens', () => {
-      expect(sanitizeCompanyNamePreview('Test Company Inc.')).toBe('test-company-inc');
+      expect(sanitizeCompanyName('Test Company Inc.')).toBe('test-company-inc');
     });
 
     it('should handle multiple spaces', () => {
-      expect(sanitizeCompanyNamePreview('Test   Company   Inc')).toBe('test-company-inc');
+      expect(sanitizeCompanyName('Test   Company   Inc')).toBe('test-company-inc');
     });
 
     it('should handle empty string', () => {
-      expect(sanitizeCompanyNamePreview('')).toBe('');
+      expect(sanitizeCompanyName('')).toBe('');
     });
   });
 

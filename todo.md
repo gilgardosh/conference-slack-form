@@ -5,7 +5,7 @@
 **✅ COMPLETED:**
 - **Milestone 0**: Full repository setup with TypeScript, Yarn workspaces, ESLint, Prettier, Vitest
 - **Milestone 1**: Worker API scaffolding with basic routes and structured error handling
-- **Milestone 2**: Validation & Sanitization (Zod schemas, company name sanitization, utilities, unit tests)
+- **Milestone 2**: ✅ **FULLY COMPLETED** - Validation & Sanitization with comprehensive Zod schemas, company name sanitization, unit tests (45/45 passing), and live API integration
 
 **🚧 PARTIALLY COMPLETED:**
 - **Milestone 6**: Basic React SPA scaffold (needs form components)
@@ -61,12 +61,14 @@
   * remove emojis/non-latin symbols
   * collapse multiple dashes, trim edges, truncate to 67 chars
 * [x] Implement `validateAndSanitize()` function returning `{ok,value}` or `{ok:false,errors}`
-* [x] Implement `isFreeEmailDomain(email)` helper
-* [x] Unit tests for sanitization and validation edge cases
-* [x] Integrate with `/api/submit` stub
-* [x] Wrangler dev server configuration and debugging
-* [x] Endpoint validation with curl testing
-* [x] Shell script for automated endpoint testing
+* [x] Implement `isFreeEmailDomain(email)` helper with 12 major providers
+* [x] Comprehensive unit tests for sanitization and validation edge cases (22 test cases)
+* [x] Integrate with `/api/submit` endpoint with proper 422 error responses
+* [x] Live API testing with curl - all acceptance criteria met:
+  * ✅ `POST {"companyName": "Café 🚀", "email": "user@example.com"}` → `sanitizedCompanyName: "cafe"`
+  * ✅ Validation errors return 422 with detailed error messages
+  * ✅ Complex sanitization cases working (accents, symbols, formatting)
+* [x] All tests passing (45/45) including new validation and existing worker tests
 
 ---
 

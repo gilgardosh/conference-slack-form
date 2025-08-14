@@ -4,7 +4,6 @@ import type {
   FormSubmissionRequest, 
   FormSubmissionResponse, 
   PingResponse,
-  ApiErrorResponse 
 } from './types';
 import { 
   generateId, 

@@ -110,7 +110,7 @@ describe('Cloudflare Worker', () => {
       });
     });
 
-    it('should return 400 for missing companyName', async () => {
+    it('should return 422 for missing companyName', async () => {
       const request = new Request('http://localhost:8787/api/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -120,15 +120,16 @@ describe('Cloudflare Worker', () => {
       const response = await worker.fetch(request, mockEnv);
       const data = await response.json();
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(422);
       expect(data).toEqual({
         ok: false,
-        errorCode: 'MISSING_COMPANY_NAME',
-        message: 'companyName is required and must be a string',
+        code: 'VALIDATION_ERROR',
+        message: 'Validation failed',
+        errors: ['companyName: Required']
       });
     });
 
-    it('should return 400 for invalid email format', async () => {
+    it('should return 422 for invalid email format', async () => {
       const request = new Request('http://localhost:8787/api/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -141,11 +142,12 @@ describe('Cloudflare Worker', () => {
       const response = await worker.fetch(request, mockEnv);
       const data = await response.json();
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(422);
       expect(data).toEqual({
         ok: false,
-        errorCode: 'INVALID_EMAIL_FORMAT',
-        message: 'Invalid email format',
+        code: 'VALIDATION_ERROR',
+        message: 'Validation failed',
+        errors: ['email: Invalid email format']
       });
     });
 
@@ -164,7 +166,7 @@ describe('Cloudflare Worker', () => {
 
       expect(response.status).toBe(200);
       expect(data.ok).toBe(true);
-      expect(data.sanitizedCompanyName).toBe('test-company-inc.');
+      expect(data.sanitizedCompanyName).toBe('test-company-inc');
       expect(typeof data.id).toBe('string');
       expect(data.id).toMatch(/^[0-9a-f-]{36}$/); // UUID format
     });

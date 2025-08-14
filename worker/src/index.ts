@@ -1,17 +1,15 @@
 import { Router } from 'itty-router';
 import type { 
   Env, 
-  FormSubmissionRequest, 
   FormSubmissionResponse, 
   PingResponse,
-  ApiErrorResponse 
 } from './types';
 import { 
   generateId, 
   jsonResponse, 
   errorResponse, 
-  sanitizeCompanyNamePreview 
 } from './utils';
+import { validateAndSanitize } from './utils/validation';
 
 // Create router instance
 const router = Router();
@@ -44,7 +42,7 @@ router.get('/api/ping', (): Response => {
 });
 
 /**
- * Form submission endpoint (stub implementation)
+ * Form submission endpoint
  * POST /api/submit
  */
 router.post('/api/submit', async (request: Request): Promise<Response> => {
@@ -62,57 +60,31 @@ router.post('/api/submit', async (request: Request): Promise<Response> => {
       );
     }
 
-    // Basic shape validation
-    if (!body || typeof body !== 'object') {
-      return errorResponse(
-        'INVALID_REQUEST_BODY',
-        'Request body must be a JSON object',
-        400
-      );
+    // Validate and sanitize input
+    const validationResult = validateAndSanitize(body);
+    
+    if (!validationResult.ok) {
+      return new Response(JSON.stringify({
+        ok: false,
+        code: 'VALIDATION_ERROR',
+        message: 'Validation failed',
+        errors: validationResult.errors
+      }), {
+        status: 422,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
+      });
     }
 
-    const requestData = body as Record<string, unknown>;
-
-    // Validate required fields
-    if (typeof requestData.companyName !== 'string') {
-      return errorResponse(
-        'MISSING_COMPANY_NAME',
-        'companyName is required and must be a string',
-        400
-      );
-    }
-
-    if (typeof requestData.email !== 'string') {
-      return errorResponse(
-        'MISSING_EMAIL',
-        'email is required and must be a string',
-        400
-      );
-    }
-
-    const submissionData: FormSubmissionRequest = {
-      companyName: requestData.companyName,
-      email: requestData.email,
-    };
-
-    // Basic email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(submissionData.email)) {
-      return errorResponse(
-        'INVALID_EMAIL_FORMAT',
-        'Invalid email format',
-        400
-      );
-    }
-
-    // Generate response (stub implementation)
-    const sanitizedCompanyName = sanitizeCompanyNamePreview(submissionData.companyName);
+    // Generate response with validated and sanitized data
     const submissionId = generateId();
 
     const response: FormSubmissionResponse = {
       ok: true,
       id: submissionId,
-      sanitizedCompanyName,
+      sanitizedCompanyName: validationResult.value.sanitizedCompanyName,
     };
 
     return jsonResponse(response);
