@@ -1,12 +1,13 @@
 # TODO.md — Conference Slack Channel Form App
 
-## 📈 Current Progress Summary
+## 📈 Current Progress Su* [x] All tests passing (80 total tests) including new email service and existing worker testsmary
 
 **✅ COMPLETED:**
 - **Milestone 0**: Full repository setup with TypeScript, Yarn workspaces, ESLint, Prettier, Vitest
 - **Milestone 1**: Worker API scaffolding with basic routes and structured error handling
 - **Milestone 2**: ✅ **FULLY COMPLETED** - Validation & Sanitization with comprehensive Zod schemas, company name sanitization, unit tests (45/45 passing), and live API integration
 - **Milestone 3**: ✅ **FULLY COMPLETED** - Slack Module with comprehensive API wrapper, channel creation with collision handling, team/guest invitations, logging, rate limit handling, and 19 passing unit tests
+- **Milestone 4**: ✅ **FULLY COMPLETED** - Postmark Email Module with welcome email functionality, HTML/text templates, PII protection, comprehensive unit tests (13 test cases), and integration examples
 
 **🚧 PARTIALLY COMPLETED:**
 - **Milestone 6**: Basic React SPA scaffold (needs form components)
@@ -14,7 +15,7 @@
 - **Milestone 9**: Initial deliverables documentation created
 
 **🎯 NEXT UP:**
-- **Milestone 4**: Postmark Email Module (welcome emails)
+- **Milestone 5**: Rate Limiter (in-memory with IP and email tracking)
 
 ---
 
@@ -92,13 +93,22 @@
 
 ---
 
-## 📧 Milestone 4 — Postmark Email Module
+## 📧 Milestone 4 — Postmark Email Module (COMPLETED)
 
-* [ ] Implement `sendWelcomeEmail({companyName,email,channelName,channelUrl})`
-* [ ] Use Postmark HTTP API with `POSTMARK_API_KEY`
-* [ ] No retries; log errors via Slack
-* [ ] Mock fetch for unit tests (success & failure flows)
-* [ ] Add minimal inline HTML email template
+* [x] Implement `sendWelcomeEmail({companyName,email,channelName,channelUrl})`
+* [x] Use Postmark HTTP API with `POSTMARK_API_KEY`
+* [x] No retries; log errors via Slack
+* [x] Mock fetch for unit tests (success & failure flows)
+* [x] Add minimal inline HTML email template
+* [x] Comprehensive implementation with:
+  * EmailClient class with Postmark API integration
+  * HTML and plain text email templates with The Guild branding
+  * PII protection - email sanitization for logs (e.g., `us***@company.com`)
+  * 13 unit tests covering all scenarios (success, HTTP errors, network failures, HTML escaping)
+  * 3 integration tests demonstrating Slack + email workflow
+  * Complete documentation with usage examples
+  * TypeScript types and proper error handling
+  * No automatic retries - fails fast with structured error responses
 
 ---
 
