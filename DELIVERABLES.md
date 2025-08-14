@@ -66,7 +66,7 @@ The following environment variables must be configured:
 | Variable | Description |
 |----------|-------------|
 | `SLACK_BOT_TOKEN` | Slack Bot User OAuth Token |
-| `SLACK_TEAM_ID` | Slack workspace/team ID |
+| `SLACK_TEAM_ID` | Slack workspace/team ID (also used for group invitations) |
 | `SLACK_LOG_CHANNEL_ID` | Channel ID for logging events |
 | `POSTMARK_API_KEY` | Postmark server API key |
 | `RATE_LIMIT` | Max submissions per window per IP/email |

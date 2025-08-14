@@ -6,6 +6,7 @@
 - **Milestone 0**: Full repository setup with TypeScript, Yarn workspaces, ESLint, Prettier, Vitest
 - **Milestone 1**: Worker API scaffolding with basic routes and structured error handling
 - **Milestone 2**: ✅ **FULLY COMPLETED** - Validation & Sanitization with comprehensive Zod schemas, company name sanitization, unit tests (45/45 passing), and live API integration
+- **Milestone 3**: ✅ **FULLY COMPLETED** - Slack Module with comprehensive API wrapper, channel creation with collision handling, team/guest invitations, logging, rate limit handling, and 19 passing unit tests
 
 **🚧 PARTIALLY COMPLETED:**
 - **Milestone 6**: Basic React SPA scaffold (needs form components)
@@ -13,7 +14,7 @@
 - **Milestone 9**: Initial deliverables documentation created
 
 **🎯 NEXT UP:**
-- **Milestone 3**: Slack Module (channel creation, invites, logging)
+- **Milestone 4**: Postmark Email Module (welcome emails)
 
 ---
 
@@ -72,15 +73,22 @@
 
 ---
 
-## 🔗 Milestone 3 — Slack Module
+## 🔗 Milestone 3 — Slack Module (COMPLETED)
 
-* [ ] Create `createChannel(sanitizedName)` with collision handling
-* [ ] Create `inviteGroup(channelId)` for `@guild`
-* [ ] Create `inviteGuest(email, channelId)` for single-channel guest
-* [ ] Implement `logToChannel(message, level)` helper
-* [ ] Mock Slack API for unit tests
-* [ ] Ensure rate limit handling (detect 429 and return actionable error)
-* [ ] Add tests for collision name handling
+* [x] Create `createChannel(sanitizedName)` with collision handling
+* [x] Create `inviteGroup(channelId)` for team using `SLACK_TEAM_ID`
+* [x] Create `inviteGuest(email, channelId)` for single-channel guest
+* [x] Implement `logToChannel(message, level)` helper
+* [x] Mock Slack API for unit tests
+* [x] Ensure rate limit handling (detect 429 and return actionable error)
+* [x] Add tests for collision name handling
+* [x] Comprehensive implementation with:
+  * Full TypeScript types and error handling
+  * Injectable fetch function for testing
+  * 19 unit tests covering all scenarios (name collisions, rate limits, invitations, logging)
+  * Channel name pattern: `ext-theguild-${sanitizedCompanyName}`
+  * Production-ready with proper error surfacing
+  * Updated environment variables (consolidated GUILD_GROUP_ID → SLACK_TEAM_ID)
 
 ---
 

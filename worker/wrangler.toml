@@ -10,7 +10,7 @@ name = "conference-slack-form-worker"
 
 # Environment variables (set via wrangler secret put)
 # SLACK_BOT_TOKEN - Slack Bot User OAuth Token
-# SLACK_TEAM_ID - Your Slack workspace/team ID  
+# SLACK_TEAM_ID - Your Slack workspace/team ID (also used for group invitations)
 # SLACK_LOG_CHANNEL_ID - Channel ID for logging events
 # POSTMARK_API_KEY - Postmark server API key for sending emails
 # RATE_LIMIT - Maximum submissions per window per IP/email (e.g., "5")
