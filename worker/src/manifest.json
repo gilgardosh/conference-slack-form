@@ -1,0 +1,10 @@
+{
+  "name": "conference-slack-form-static",
+  "version": "0.1.0",
+  "description": "Static assets manifest for Conference Slack Form",
+  "assets": {
+    "/": "/index.html",
+    "/index.html": "/index.html"
+  },
+  "fallback": "/index.html"
+}

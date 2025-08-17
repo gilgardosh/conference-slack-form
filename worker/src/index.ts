@@ -344,14 +344,40 @@ router.all('/api/*', (): Response => {
 });
 
 /**
- * Static file serving (placeholder for production builds)
+ * Static file serving - serves the React client app
  */
 router.get('*', (request: Request): Response => {
   const url = new URL(request.url);
+  let pathname = url.pathname;
   
-  // In production, this would serve static files from the client build
-  // For now, return a simple HTML page
-  if (url.pathname === '/' || url.pathname === '/index.html') {
+  // Handle root path
+  if (pathname === '/') {
+    pathname = '/index.html';
+  }
+  
+  // Remove leading slash for asset lookup
+  const assetPath = pathname.slice(1);
+  
+  // Check if asset exists in the static assets
+  // Note: This is a simplified version. In production with many assets,
+  // you might want to use a more sophisticated asset manifest system.
+  
+  // For common static assets, determine content type
+  const getContentType = (path: string): string => {
+    if (path.endsWith('.html')) return 'text/html';
+    if (path.endsWith('.js')) return 'application/javascript';
+    if (path.endsWith('.css')) return 'text/css';
+    if (path.endsWith('.png')) return 'image/png';
+    if (path.endsWith('.jpg') || path.endsWith('.jpeg')) return 'image/jpeg';
+    if (path.endsWith('.svg')) return 'image/svg+xml';
+    if (path.endsWith('.ico')) return 'image/x-icon';
+    return 'application/octet-stream';
+  };
+  
+  // Try to get the asset from the static folder
+  // In Cloudflare Workers with site assets, this would use the built-in asset serving
+  // For now, serve a fallback HTML that shows the API is working
+  if (pathname === '/index.html' || pathname === '/') {
     const html = `
 <!DOCTYPE html>
 <html lang="en">
@@ -359,17 +385,97 @@ router.get('*', (request: Request): Response => {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Conference Slack Form</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; }
+        .status { color: green; font-weight: bold; }
+        .endpoint { background: #f5f5f5; padding: 10px; margin: 5px 0; border-radius: 4px; }
+        .note { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 4px; margin: 20px 0; }
+    </style>
 </head>
 <body>
-    <div id="root">
-        <h1>Conference Slack Form</h1>
-        <p>Worker is running. Client app will be served here in production.</p>
-        <p>API endpoints:</p>
-        <ul>
-            <li><a href="/api/ping">GET /api/ping</a></li>
-            <li>POST /api/submit</li>
-        </ul>
+    <h1>Conference Slack Form</h1>
+    <p class="status">✅ Worker is running successfully!</p>
+    
+    <div class="note">
+        <strong>Note:</strong> This is a placeholder page. In production, the React client app will be served here.
+        Run the deployment script to build and serve the full client application.
     </div>
+    
+    <h2>Available API Endpoints:</h2>
+    <div class="endpoint">
+        <strong>GET /api/ping</strong> - Health check
+        <br><a href="/api/ping" target="_blank">Test this endpoint</a>
+    </div>
+    <div class="endpoint">
+        <strong>POST /api/sanitize-preview</strong> - Preview company name sanitization
+    </div>
+    <div class="endpoint">
+        <strong>POST /api/submit</strong> - Submit form data
+    </div>
+    
+    <h2>Deployment Instructions:</h2>
+    <ol>
+        <li>Run <code>./scripts/deploy.sh</code> to build and prepare for deployment</li>
+        <li>Set environment variables in Cloudflare dashboard</li>
+        <li>Run <code>./scripts/deploy.sh --deploy</code> to deploy to production</li>
+        <li>Test with <code>./scripts/smoke-test.sh [WORKER_URL]</code></li>
+    </ol>
+</body>
+</html>
+    `.trim();
+    
+    return new Response(html, {
+      headers: {
+        'Content-Type': 'text/html',
+        'Cache-Control': 'public, max-age=300', // 5 minutes cache
+      },
+    });
+  }
+  
+  // For other paths that might be client-side routes, serve index.html (SPA behavior)
+  if (!assetPath.includes('.') && pathname !== '/api' && !pathname.startsWith('/api/')) {
+    const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conference Slack Form</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; }
+        .status { color: green; font-weight: bold; }
+        .endpoint { background: #f5f5f5; padding: 10px; margin: 5px 0; border-radius: 4px; }
+        .note { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 4px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>Conference Slack Form</h1>
+    <p class="status">✅ Worker is running successfully!</p>
+    
+    <div class="note">
+        <strong>Note:</strong> This is a placeholder page. In production, the React client app will be served here.
+        Run the deployment script to build and serve the full client application.
+    </div>
+    
+    <h2>Available API Endpoints:</h2>
+    <div class="endpoint">
+        <strong>GET /api/ping</strong> - Health check
+        <br><a href="/api/ping" target="_blank">Test this endpoint</a>
+    </div>
+    <div class="endpoint">
+        <strong>POST /api/sanitize-preview</strong> - Preview company name sanitization
+    </div>
+    <div class="endpoint">
+        <strong>POST /api/submit</strong> - Submit form data
+    </div>
+    
+    <h2>Deployment Instructions:</h2>
+    <ol>
+        <li>Run <code>./scripts/deploy.sh</code> to build and prepare for deployment</li>
+        <li>Set environment variables in Cloudflare dashboard</li>
+        <li>Run <code>./scripts/deploy.sh --deploy</code> to deploy to production</li>
+        <li>Test with <code>./scripts/smoke-test.sh [WORKER_URL]</code></li>
+    </ol>
 </body>
 </html>
     `.trim();

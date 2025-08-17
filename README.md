@@ -82,16 +82,96 @@ Your Slack bot requires these OAuth scopes:
 
 ## Building and Deployment
 
-1. **Build all packages:**
+### Automated Deployment
+
+Use the provided deployment script for streamlined building and deployment:
+
+```bash
+# Build client and worker (without deploying)
+./scripts/deploy.sh
+
+# Build and deploy to Cloudflare Workers
+./scripts/deploy.sh --deploy
+```
+
+The deployment script will:
+1. Build the React client application
+2. Copy static assets to the worker's static directory
+3. Build the Cloudflare Worker
+4. Optionally deploy to Cloudflare (with `--deploy` flag)
+
+### Manual Deployment
+
+1. **Build the client:**
    ```bash
-   yarn build
+   cd client
+   yarn install
+   yarn run build
    ```
 
-2. **Deploy to Cloudflare Workers:**
+2. **Copy assets to worker:**
    ```bash
    cd worker
-   yarn deploy
+   mkdir -p static
+   cp -r ../client/dist/* static/
    ```
+
+3. **Build and deploy worker:**
+   ```bash
+   cd worker
+   yarn install
+   yarn run build
+   yarn run deploy
+   ```
+
+### Setting Environment Variables in Cloudflare
+
+After deployment, configure environment variables in the Cloudflare dashboard:
+
+1. **Via Cloudflare Dashboard:**
+   - Go to Workers & Pages → Your Worker → Settings → Environment Variables
+   - Add each required environment variable listed above
+
+2. **Via Wrangler CLI:**
+   ```bash
+   cd worker
+   npx wrangler secret put SLACK_BOT_TOKEN
+   npx wrangler secret put SLACK_TEAM_ID
+   npx wrangler secret put SLACK_LOG_CHANNEL_ID
+   npx wrangler secret put POSTMARK_API_KEY
+   npx wrangler secret put RATE_LIMIT
+   npx wrangler secret put RATE_LIMIT_WINDOW_SEC
+   ```
+
+### Smoke Testing
+
+Test your deployment with the provided smoke test script:
+
+```bash
+# Test local development server
+./scripts/smoke-test.sh http://localhost:8788
+
+# Test production deployment
+./scripts/smoke-test.sh https://your-worker.your-subdomain.workers.dev
+```
+
+The smoke test script will verify:
+- ✅ API health check (`/api/ping`)
+- ✅ Error handling and validation
+- ✅ CORS configuration
+- ✅ Static file serving
+- ✅ Form submission (requires environment variables)
+
+### Production Checklist
+
+Before going live, ensure:
+
+1. **Environment Variables**: All required variables are set in Cloudflare
+2. **Slack Bot Setup**: Bot has proper permissions and is added to your workspace
+3. **Postmark Configuration**: API key is valid and sending domain is verified
+4. **Rate Limits**: Appropriate limits are configured for your use case
+5. **Smoke Tests**: All tests pass against production URL
+6. **DNS/Custom Domain**: (Optional) Custom domain is configured if needed
 
 ## Project Structure
 

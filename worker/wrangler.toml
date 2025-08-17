@@ -2,6 +2,10 @@ name = "conference-slack-form-worker"
 main = "src/index.ts"
 compatibility_date = "2023-07-10"
 
+# Static assets configuration
+[site]
+bucket = "./static"
+
 [env.development]
 name = "conference-slack-form-worker-dev"
 

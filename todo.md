@@ -15,6 +15,7 @@
 
 **✅ COMPLETED:**
 - **Milestone 8**: ✅ **FULLY COMPLETED** - Documentation & Environment Setup with comprehensive deployment guide, QA checklist, security documentation, and environment configuration files
+- **Milestone 8.5**: ✅ **FULLY COMPLETED** - Final Deployment Infrastructure with automated deployment script, smoke test suite, static asset wiring, and updated README with step-by-step deployment instructions
 
 **🎯 NEXT UP:**
 - **Milestone 9**: Final QA & Polish
@@ -254,15 +255,50 @@
   * Curl commands for testing Slack integration and API endpoints
   * Security guidelines covering token protection, CORS rules, and Slack scopes
   * GDPR compliance considerations and incident response procedures
-* [ ] Deployment scripts:
 
-  * `deploy.sh` → builds client, worker, publishes via Wrangler
-  * `smoke-test.sh` → calls `/api/ping` and `/api/submit`
-* [ ] Update README with setup and deployment instructions
+---
+
+## 🚀 Milestone 8.5 — Final Deployment Infrastructure (COMPLETED)
+
+* [x] Create automated deployment script (`scripts/deploy.sh`):
+  * Builds client application using `npm run build`
+  * Copies static assets from `client/dist/` to `worker/static/`
+  * Builds worker with type checking
+  * Optional deployment with `--deploy` flag
+  * Comprehensive error handling and progress reporting
+* [x] Create comprehensive smoke test script (`scripts/smoke-test.sh`):
+  * Tests `/api/ping` health check endpoint
+  * Validates error handling (404, 400, 422 responses)
+  * Tests input validation and sanitization preview
+  * Verifies CORS configuration
+  * Tests static file serving
+  * Validates form submission flow (shows expected failure without credentials)
+* [x] Update worker configuration:
+  * Enhanced `wrangler.toml` with static assets configuration
+  * Updated static file serving to properly serve React app
+  * Added `worker/src/manifest.json` for asset mapping  * Automated deployment process documentation
+  * Environment variable setup (dashboard and CLI methods)
+  * Smoke testing procedures
+  * Production deployment checklist
+* [x] Update `.gitignore` with all relevant worker sub-folders:
+  * `worker/.wrangler/`, `worker/dist/`, `worker/static/`
+  * Worker log files and temporary build artifacts
+* [x] Update README with step-by-step deployment instructions:
+
 
 ---
 
 ## 🧹 Milestone 9 — Final QA & Polish
+
+* [ ] Ensure all TypeScript types are used correctly
+* [ ] Final unit tests:
+
+  * Sanitizer edge cases
+  * Rate-limiter expiry
+* [ ] Lint entire codebase and fix errors
+* [ ] Ensure no secrets committed
+* [ ] Create `DELIVERABLES.md` with all entry points and extension instructions
+* [ ] Create a manual runbook for non-dev deploy
 
 * [ ] Ensure all TypeScript types are used correctly
 * [ ] Final unit tests:

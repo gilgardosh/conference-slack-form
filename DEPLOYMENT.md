@@ -5,7 +5,7 @@ This document outlines how to deploy and configure the Conference Slack Form app
 ## Prerequisites
 
 - Node.js 18+ installed
-- Wrangler CLI installed (`npm install -g wrangler`)
+- Wrangler CLI installed (`yarn install -g wrangler`)
 - Cloudflare account with Workers enabled
 - Slack workspace with admin access
 - Postmark account for email sending

@@ -78,7 +78,16 @@ coverage/
 # Cloudflare Workers
 .dev.vars
 wrangler.toml.local
-*/.wrangler
+worker/.wrangler/
+worker/dist/
+worker/static/
+worker/worker.log
+worker/*.log
+
+# Wrangler build outputs and temporary files
+.wrangler/
+**/tmp/
+**/state/
 
 # Logs
 logs
