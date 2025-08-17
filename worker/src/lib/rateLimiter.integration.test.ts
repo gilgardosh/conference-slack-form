@@ -195,8 +195,6 @@ describe('Rate Limiter Integration', () => {
   describe('Combined rate limiting scenarios', () => {
     it('should enforce both IP and email limits', async () => {
       const ip = '10.0.0.1';
-      const email = 'combined@example.com';
-      const formData = { ...validFormData, email };
       
       // Exhaust IP limit
       for (let i = 0; i < 3; i++) {

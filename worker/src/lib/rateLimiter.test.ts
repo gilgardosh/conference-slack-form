@@ -66,8 +66,6 @@ describe('RateLimiter', () => {
 
   describe('time window expiry', () => {
     it('should reset counter after window expires', async () => {
-      // Mock Date.now to control time
-      const originalNow = Date.now;
       let currentTime = 1000000;
       vi.spyOn(Date, 'now').mockImplementation(() => currentTime);
 
@@ -134,7 +132,6 @@ describe('RateLimiter', () => {
       const windowSec = 60;
       
       // Simulate rapid succession requests
-      const start = Date.now();
       const results = [];
       
       for (let i = 0; i < 5; i++) {
@@ -201,7 +198,6 @@ describe('RateLimiter', () => {
     });
 
     it('should cleanup expired entries', () => {
-      const originalNow = Date.now;
       let currentTime = 1000000;
       vi.spyOn(Date, 'now').mockImplementation(() => currentTime);
 
@@ -354,7 +350,6 @@ describe('Edge cases and stress testing', () => {
   });
 
   it('should handle very short time windows', () => {
-    const originalNow = Date.now;
     let currentTime = 1000000;
     vi.spyOn(Date, 'now').mockImplementation(() => currentTime);
 
