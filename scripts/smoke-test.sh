@@ -13,7 +13,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Default worker URL (can be overridden by command line argument)
-WORKER_URL="${1:-http://localhost:8788}"
+WORKER_URL="${1:-http://localhost:8787}"
 
 echo -e "${BLUE}🧪 Running smoke tests for Conference Slack Form${NC}"
 echo -e "${BLUE}📍 Target URL: $WORKER_URL${NC}"

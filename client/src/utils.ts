@@ -1,6 +1,6 @@
 import type { FormData, SanitizePreviewResponse, SubmitResponse } from './types';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8788';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8787';
 
 export async function sanitizePreview(formData: FormData): Promise<SanitizePreviewResponse> {
   const response = await fetch(`${API_BASE_URL}/api/sanitize-preview`, {

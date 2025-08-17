@@ -8,7 +8,7 @@ Before running any tests, ensure:
 
 1. **Worker is running:**
    ```bash
-   cd worker && npx wrangler dev src/index.ts --port 8788
+   cd worker && npx wrangler dev src/index.ts --port 8787
    ```
 
 2. **Client is running:**

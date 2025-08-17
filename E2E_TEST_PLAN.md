@@ -4,7 +4,7 @@ This document outlines manual testing steps to validate the form submission flow
 
 ## Prerequisites
 
-1. Start the worker service: `cd worker && npx wrangler dev src/index.ts --port 8788`
+1. Start the worker service: `cd worker && npx wrangler dev src/index.ts --port 8787`
 2. Start the client: `cd client && yarn run dev`
 3. Open the application at `http://localhost:5173`
 

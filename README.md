@@ -149,7 +149,7 @@ Test your deployment with the provided smoke test script:
 
 ```bash
 # Test local development server
-./scripts/smoke-test.sh http://localhost:8788
+./scripts/smoke-test.sh http://localhost:8787
 
 # Test production deployment
 ./scripts/smoke-test.sh https://your-worker.your-subdomain.workers.dev

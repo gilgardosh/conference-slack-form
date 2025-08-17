@@ -24,7 +24,7 @@ describe('sanitizePreview', () => {
     const result = await sanitizePreview(formData);
 
     expect(mockFetch).toHaveBeenCalledWith(
-      'http://localhost:8788/api/sanitize-preview',
+      'http://localhost:8787/api/sanitize-preview',
       {
         method: 'POST',
         headers: {
