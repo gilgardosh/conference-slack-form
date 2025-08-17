@@ -1,6 +1,6 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8788';
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   ok: boolean;
   data?: T;
   error?: string;
@@ -50,7 +50,7 @@ export async function sanitizePreview(companyName: string): Promise<ApiResponse<
         error: result.message || 'Failed to sanitize company name',
       };
     }
-  } catch (error) {
+  } catch {
     return {
       ok: false,
       error: 'Network error. Please check your connection and try again.',
@@ -117,7 +117,7 @@ export async function submitSubmission({
         error: result.message || 'Submission failed. Please try again.',
       };
     }
-  } catch (error) {
+  } catch {
     return {
       ok: false,
       error: 'Network error. Please check your connection and try again.',

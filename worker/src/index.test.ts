@@ -1,5 +1,23 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { Env } from './types';
+
+// Mock Slack and Email services
+vi.mock('./lib/slack', () => ({
+  createSlackClient: vi.fn(() => ({
+    logToChannel: vi.fn().mockResolvedValue({ ok: true, timestamp: '1234567890.123456' }),
+    createChannel: vi.fn().mockResolvedValue({ 
+      ok: true, 
+      channelId: 'C1234567890', 
+      channelName: 'test-company-inc' 
+    }),
+    inviteGroup: vi.fn().mockResolvedValue({ ok: true, invited: true }),
+    inviteGuest: vi.fn().mockResolvedValue({ ok: true, invited: true }),
+  }))
+}));
+
+vi.mock('./lib/email', () => ({
+  sendWelcomeEmail: vi.fn().mockResolvedValue({ ok: true })
+}));
 
 // Mock global fetch and Request/Response
 global.Request = global.Request || class Request {
@@ -74,6 +92,10 @@ const mockEnv: Env = {
 };
 
 describe('Cloudflare Worker', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   describe('GET /api/ping', () => {
     it('should return health check response', async () => {
       const request = new Request('http://localhost:8787/api/ping', {
@@ -188,18 +210,19 @@ describe('Cloudflare Worker', () => {
     });
 
     it('should return 404 for unknown routes', async () => {
-      const request = new Request('http://localhost:8787/unknown', {
+      const request = new Request('http://localhost:8787/api/unknown', {
         method: 'GET',
       });
 
       const response = await worker.fetch(request, mockEnv);
-      const data = await response.json();
-
+      
       expect(response.status).toBe(404);
+      
+      const data = await response.json();
       expect(data).toEqual({
         ok: false,
         errorCode: 'NOT_FOUND',
-        message: 'File not found',
+        message: 'API endpoint not found',
       });
     });
   });

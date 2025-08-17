@@ -45,6 +45,7 @@ interface SlackChannelCreateResponse extends SlackApiResponse {
 
 interface SlackConversationInviteResponse extends SlackApiResponse {
   // Slack API response structure for invite
+  data?: unknown;
 }
 
 interface SlackChatPostMessageResponse extends SlackApiResponse {

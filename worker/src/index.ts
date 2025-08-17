@@ -55,7 +55,7 @@ router.post('/api/sanitize-preview', async (request: Request): Promise<Response>
     
     try {
       body = await request.json();
-    } catch (error) {
+    } catch {
       return errorResponse(
         'INVALID_JSON',
         'Invalid JSON in request body',
@@ -110,45 +110,11 @@ router.post('/api/submit', async (request: Request, env: Env): Promise<Response>
                      request.headers.get('X-Forwarded-For') || 
                      'unknown';
 
-    // Parse request body first
-    let body: unknown;
-    
-    try {
-      body = await request.json();
-    } catch (error) {
-      return errorResponse(
-        'INVALID_JSON',
-        'Invalid JSON in request body',
-        400
-      );
-    }
-
-    // 1. Validate and sanitize input
-    const validationResult = validateAndSanitize(body);
-    
-    if (!validationResult.ok) {
-      return new Response(JSON.stringify({
-        ok: false,
-        code: 'VALIDATION_ERROR',
-        message: 'Validation failed',
-        errors: validationResult.errors
-      }), {
-        status: 422,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
-      });
-    }
-
-    const { email, sanitizedCompanyName, companyName } = validationResult.value;
-
     // Get rate limit settings from environment with defaults
     const rateLimit = parseInt(env.RATE_LIMIT || '10', 10);
     const rateLimitWindowSec = parseInt(env.RATE_LIMIT_WINDOW_SEC || '3600', 10); // 1 hour default
 
-    // 3. Rate-limit checks
-    // Check IP rate limit
+    // 1. Check IP rate limit FIRST (before parsing JSON)
     const ipRateLimit = checkIpRateLimit(clientIP, rateLimit, rateLimitWindowSec);
     if (!ipRateLimit.allowed) {
       return new Response(JSON.stringify({
@@ -171,7 +137,40 @@ router.post('/api/submit', async (request: Request, env: Env): Promise<Response>
       });
     }
 
-    // Check email rate limit
+    // 2. Parse request body
+    let body: unknown;
+    
+    try {
+      body = await request.json();
+    } catch {
+      return errorResponse(
+        'INVALID_JSON',
+        'Invalid JSON in request body',
+        400
+      );
+    }
+
+    // 3. Validate and sanitize input
+    const validationResult = validateAndSanitize(body);
+    
+    if (!validationResult.ok) {
+      return new Response(JSON.stringify({
+        ok: false,
+        code: 'VALIDATION_ERROR',
+        message: 'Validation failed',
+        errors: validationResult.errors
+      }), {
+        status: 422,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
+      });
+    }
+
+    const { email, sanitizedCompanyName, companyName } = validationResult.value;
+
+    // 4. Check email rate limit
     const emailRateLimit = checkEmailRateLimit(email, rateLimit, rateLimitWindowSec);
     if (!emailRateLimit.allowed) {
       return new Response(JSON.stringify({
@@ -213,7 +212,7 @@ router.post('/api/submit', async (request: Request, env: Env): Promise<Response>
       'info'
     );
 
-    // 4. Create Slack channel
+    // 5. Create Slack channel
     const channelResult = await slackClient.createChannel(sanitizedCompanyName);
     if (!channelResult.ok) {
       // Log error and return 502
@@ -236,7 +235,7 @@ router.post('/api/submit', async (request: Request, env: Env): Promise<Response>
     let guestInviteError = false;
     let emailSent = true;
 
-    // 5. Invite @guild group
+    // 6. Invite @guild group
     const groupInviteResult = await slackClient.inviteGroup(channelId);
     if (!groupInviteResult.ok) {
       groupInviteError = true;
@@ -246,7 +245,7 @@ router.post('/api/submit', async (request: Request, env: Env): Promise<Response>
       );
     }
 
-    // 6. Invite single-channel guest
+    // 7. Invite single-channel guest
     const guestInviteResult = await slackClient.inviteGuest(email, channelId);
     if (!guestInviteResult.ok) {
       guestInviteError = true;
@@ -256,7 +255,7 @@ router.post('/api/submit', async (request: Request, env: Env): Promise<Response>
       );
     }
 
-    // 7. Send Postmark email
+    // 8. Send Postmark email
     const channelUrl = `https://app.slack.com/client/${env.SLACK_TEAM_ID}/${channelId}`;
     const emailResult = await sendWelcomeEmail({
       companyName: validationResult.value.companyName,
@@ -273,7 +272,7 @@ router.post('/api/submit', async (request: Request, env: Env): Promise<Response>
       );
     }
 
-    // 8. Log success (with any partial failures noted)
+    // 9. Log success (with any partial failures noted)
     const partialFailures = [];
     if (groupInviteError) partialFailures.push('group invite');
     if (guestInviteError) partialFailures.push('guest invite');
@@ -285,7 +284,7 @@ router.post('/api/submit', async (request: Request, env: Env): Promise<Response>
 
     await slackClient.logToChannel(logMessage, partialFailures.length > 0 ? 'warn' : 'info');
 
-    // 9. Return success response (include emailSent flag if false)
+    // 10. Return success response (include emailSent flag if false)
     const response: FormSubmissionResponse & { slackChannelId: string; emailSent?: boolean } = {
       ok: true,
       id: submissionId,
@@ -361,18 +360,6 @@ router.get('*', (request: Request): Response => {
   // Check if asset exists in the static assets
   // Note: This is a simplified version. In production with many assets,
   // you might want to use a more sophisticated asset manifest system.
-  
-  // For common static assets, determine content type
-  const getContentType = (path: string): string => {
-    if (path.endsWith('.html')) return 'text/html';
-    if (path.endsWith('.js')) return 'application/javascript';
-    if (path.endsWith('.css')) return 'text/css';
-    if (path.endsWith('.png')) return 'image/png';
-    if (path.endsWith('.jpg') || path.endsWith('.jpeg')) return 'image/jpeg';
-    if (path.endsWith('.svg')) return 'image/svg+xml';
-    if (path.endsWith('.ico')) return 'image/x-icon';
-    return 'application/octet-stream';
-  };
   
   // Try to get the asset from the static folder
   // In Cloudflare Workers with site assets, this would use the built-in asset serving

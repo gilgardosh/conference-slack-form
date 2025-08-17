@@ -52,7 +52,7 @@ function App() {
           setSubmitError(response.error || 'Submission failed. Please try again.');
         }
       }
-    } catch (error) {
+    } catch {
       setSubmitError('Network error. Please check your connection and try again.');
     } finally {
       setIsSubmitting(false);
@@ -82,7 +82,7 @@ function App() {
         <div className="max-w-md mx-auto">
           <div className="bg-gray-50 dark:bg-gray-800 rounded-lg shadow-lg p-6">
             <p className="text-gray-600 dark:text-gray-300 mb-6">
-              Join our conference Slack workspace. We'll create a dedicated channel for your company.
+              Join our conference Slack workspace. We&apos;ll create a dedicated channel for your company.
             </p>
 
             <Form

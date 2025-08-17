@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { SlackClient, createSlackClient, type SlackError } from './slack';
+import { SlackClient, createSlackClient } from './slack';
 
 // Mock fetch function
 const createMockFetch = () => {

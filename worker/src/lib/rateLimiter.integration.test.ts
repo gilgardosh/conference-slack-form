@@ -1,6 +1,24 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import worker from '../index';
 import { getRateLimiter } from '../lib/rateLimiter';
+
+// Mock Slack and Email services
+vi.mock('../lib/slack', () => ({
+  createSlackClient: vi.fn(() => ({
+    logToChannel: vi.fn().mockResolvedValue({ ok: true, timestamp: '1234567890.123456' }),
+    createChannel: vi.fn().mockResolvedValue({ 
+      ok: true, 
+      channelId: 'C1234567890', 
+      channelName: 'test-company' 
+    }),
+    inviteGroup: vi.fn().mockResolvedValue({ ok: true, invited: true }),
+    inviteGuest: vi.fn().mockResolvedValue({ ok: true, invited: true }),
+  }))
+}));
+
+vi.mock('../lib/email', () => ({
+  sendWelcomeEmail: vi.fn().mockResolvedValue({ ok: true })
+}));
 
 // Mock environment for testing
 const mockEnv = {
@@ -34,6 +52,8 @@ describe('Rate Limiter Integration', () => {
   beforeEach(() => {
     // Clear rate limiter before each test
     getRateLimiter().clear();
+    // Clear all mocks
+    vi.clearAllMocks();
   });
 
   describe('IP-based rate limiting', () => {

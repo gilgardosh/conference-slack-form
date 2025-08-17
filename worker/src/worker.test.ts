@@ -1,21 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import type { Env } from './types';
 import { 
   generateId, 
   jsonResponse, 
   errorResponse
 } from './utils';
 import { sanitizeCompanyName } from './utils/validation';
-
-// Mock environment
-const mockEnv: Env = {
-  SLACK_BOT_TOKEN: 'xoxb-mock-token',
-  SLACK_TEAM_ID: 'T123456789',
-  SLACK_LOG_CHANNEL_ID: 'C123456789',
-  POSTMARK_API_KEY: 'mock-postmark-key',
-  RATE_LIMIT: '5',
-  RATE_LIMIT_WINDOW_SEC: '3600',
-};
 
 describe('Worker Utils', () => {
   describe('generateId', () => {
