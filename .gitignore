@@ -80,7 +80,6 @@ coverage/
 wrangler.toml.local
 worker/.wrangler/
 worker/dist/
-worker/static/
 worker/worker.log
 worker/*.log
 
