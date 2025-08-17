@@ -50,7 +50,7 @@ Below each Milestone, I break into small steps and then into micro-steps so each
 
 **Micro-steps**
 
-* `npm init -y`
+* `yarn init -y`
 * `git init`
 * Create `package.json` workspace config (or single package) with scripts: `build`, `dev`, `test`, `format`.
 * Add `tsconfig.json` with `strict: true`.
@@ -163,7 +163,7 @@ Acceptance: blocked requests get structured response code 429.
 * `client/src/lib/api.ts` with `sanitizationPreview()` and `submit()` functions.
 * Visual validation UI, disabled button state, and reset behavior after success.
 
-Acceptance: local dev `npm start` shows form; modal shows preview returned by the worker.
+Acceptance: local dev `yarn start` shows form; modal shows preview returned by the worker.
 
 ---
 
@@ -225,7 +225,7 @@ Requirements:
 
 Deliverables (files + brief run instructions) and acceptance test:
 - Files created: root package.json, tsconfig.json, eslint, prettier, vitest config, /client and /worker skeletons.
-- Acceptance: `npm install` then `npm run test` should run vitest (even if only placeholder test), and `npm run dev` prints the two dev commands; explain how to start each service.
+- Acceptance: `yarn install` then `yarn run test` should run vitest (even if only placeholder test), and `yarn run dev` prints the two dev commands; explain how to start each service.
 ```
 
 ---
@@ -252,7 +252,7 @@ Non-functional requirements:
 Deliverables & acceptance tests:
 - `worker/src/index.ts` with routing handlers.
 - `curl` examples in the README showing `GET /api/ping` and `POST /api/submit`.
-- Acceptance: `npm run dev` inside `/worker` then `curl http://localhost:8787/api/ping` returns the expected JSON; `curl -X POST /api/submit -d '{}'` returns 400.
+- Acceptance: `yarn run dev` inside `/worker` then `curl http://localhost:8787/api/ping` returns the expected JSON; `curl -X POST /api/submit -d '{}'` returns 400.
 ```
 
 ---
@@ -421,7 +421,7 @@ Task: Implement React client under `/client`:
   - Add a small unit test for the `sanitizePreview` client function (mock fetch) and a smoke test for the `App` renders form.
 
 Acceptance:
-- `npm run dev` for the client opens a dev server and form renders.
+- `yarn run dev` for the client opens a dev server and form renders.
 - Clicking submit opens modal and modal shows text returned by `/api/sanitize-preview` (mocked in dev if needed).
 ```
 
@@ -480,7 +480,7 @@ Context: All modules exist; tests passing.
 
 Task:
 - Produce final wiring and a deployment script:
-  - Add `scripts/deploy.sh` that runs `npm run build` for client, places static assets into worker produce path, builds worker, and runs `wrangler publish`.
+  - Add `scripts/deploy.sh` that runs `yarn run build` for client, places static assets into worker produce path, builds worker, and runs `wrangler publish`.
   - Ensure `wrangler.toml` references `main` output.
   - Add `worker/src/manifest.json` or static assets mapping if required.
 - Create a final smoke test script `scripts/smoke-test.sh` that:
@@ -512,7 +512,7 @@ Task:
 - NOTE: If any previous prompt created partial code, make sure you integrate missing imports and wiring so nothing is orphaned.
 
 Acceptance:
-- `npm run lint`, `npm run build`, and `npm run test` all succeed locally.
+- `yarn run lint`, `yarn run build`, and `yarn run test` all succeed locally.
 ```
 
 ---
