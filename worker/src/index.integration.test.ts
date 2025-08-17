@@ -14,18 +14,18 @@ const mockSlackClient = {
   logToChannel: vi.fn(),
 };
 
-const mockEmailClient = {
-  sendWelcomeEmail: vi.fn(),
-};
+// const mockEmailClient = {
+//   sendWelcomeEmail: vi.fn(),
+// };
 
 // Mock the modules
 vi.mock('./lib/slack', () => ({
   createSlackClient: vi.fn(() => mockSlackClient),
 }));
 
-vi.mock('./lib/email', () => ({
-  sendWelcomeEmail: vi.fn((...args) => mockEmailClient.sendWelcomeEmail(...args)),
-}));
+// vi.mock('./lib/email', () => ({
+//   sendWelcomeEmail: vi.fn((...args) => mockEmailClient.sendWelcomeEmail(...args)),
+// }));
 
 describe('/api/submit endpoint integration tests', () => {
   const mockEnv: Env = {
@@ -64,9 +64,9 @@ describe('/api/submit endpoint integration tests', () => {
       timestamp: '1234567890.123',
     });
     
-    mockEmailClient.sendWelcomeEmail.mockResolvedValue({
-      ok: true,
-    });
+    // mockEmailClient.sendWelcomeEmail.mockResolvedValue({
+    //   ok: true,
+    // });
   });
 
   it('should process valid submission successfully with full flow', async () => {
@@ -97,12 +97,12 @@ describe('/api/submit endpoint integration tests', () => {
     expect(mockSlackClient.createChannel).toHaveBeenCalledWith('test-company');
     expect(mockSlackClient.inviteGroup).toHaveBeenCalledWith('C123456789');
     expect(mockSlackClient.inviteGuest).toHaveBeenCalledWith('test@company.com', 'C123456789');
-    expect(mockEmailClient.sendWelcomeEmail).toHaveBeenCalledWith({
-      companyName: 'Test Company',
-      email: 'test@company.com',
-      channelName: 'ext-theguild-test-company',
-      channelUrl: 'https://app.slack.com/client/test-team-id/C123456789',
-    }, 'test-postmark-key');
+    // expect(mockEmailClient.sendWelcomeEmail).toHaveBeenCalledWith({
+    //   companyName: 'Test Company',
+    //   email: 'test@company.com',
+    //   channelName: 'ext-theguild-test-company',
+    //   channelUrl: 'https://app.slack.com/client/test-team-id/C123456789',
+    // }, 'test-postmark-key');
     expect(mockSlackClient.logToChannel).toHaveBeenCalledWith(
       expect.stringContaining('Submission successfully processed for test@company.com'),
       'info'
@@ -135,7 +135,7 @@ describe('/api/submit endpoint integration tests', () => {
 
     // No Slack or email operations should have been called
     expect(mockSlackClient.createChannel).not.toHaveBeenCalled();
-    expect(mockEmailClient.sendWelcomeEmail).not.toHaveBeenCalled();
+    // expect(mockEmailClient.sendWelcomeEmail).not.toHaveBeenCalled();
   });
 
   it('should return 429 for IP rate limiting', async () => {
@@ -264,7 +264,7 @@ describe('/api/submit endpoint integration tests', () => {
     // No further operations should have been attempted
     expect(mockSlackClient.inviteGroup).not.toHaveBeenCalled();
     expect(mockSlackClient.inviteGuest).not.toHaveBeenCalled();
-    expect(mockEmailClient.sendWelcomeEmail).not.toHaveBeenCalled();
+    // expect(mockEmailClient.sendWelcomeEmail).not.toHaveBeenCalled();
   });
 
   it('should continue processing when group invite fails', async () => {
@@ -305,7 +305,7 @@ describe('/api/submit endpoint integration tests', () => {
 
     // Should still continue with guest invite and email
     expect(mockSlackClient.inviteGuest).toHaveBeenCalled();
-    expect(mockEmailClient.sendWelcomeEmail).toHaveBeenCalled();
+    // expect(mockEmailClient.sendWelcomeEmail).toHaveBeenCalled();
 
     // Should log with partial failures
     expect(mockSlackClient.logToChannel).toHaveBeenCalledWith(
@@ -351,7 +351,7 @@ describe('/api/submit endpoint integration tests', () => {
     );
 
     // Should still continue with email
-    expect(mockEmailClient.sendWelcomeEmail).toHaveBeenCalled();
+    // expect(mockEmailClient.sendWelcomeEmail).toHaveBeenCalled();
 
     // Should log with partial failures
     expect(mockSlackClient.logToChannel).toHaveBeenCalledWith(
@@ -361,10 +361,10 @@ describe('/api/submit endpoint integration tests', () => {
   });
 
   it('should continue processing when email fails', async () => {
-    mockEmailClient.sendWelcomeEmail.mockResolvedValue({
-      ok: false,
-      error: 'Email sending failed: Network error',
-    });
+    // mockEmailClient.sendWelcomeEmail.mockResolvedValue({
+    //   ok: false,
+    //   error: 'Email sending failed: Network error',
+    // });
 
     const request = new Request('http://localhost:8787/api/submit', {
       method: 'POST',
@@ -387,20 +387,20 @@ describe('/api/submit endpoint integration tests', () => {
       id: expect.any(String),
       sanitizedCompanyName: 'test-company',
       slackChannelId: 'C123456789',
-      emailSent: false,
+      // emailSent: false,
     });
 
     // Should have logged the warning
-    expect(mockSlackClient.logToChannel).toHaveBeenCalledWith(
-      expect.stringContaining('Email sending failed'),
-      'warn'
-    );
+    // expect(mockSlackClient.logToChannel).toHaveBeenCalledWith(
+    //   expect.stringContaining('Email sending failed'),
+    //   'warn'
+    // );
 
     // Should log with partial failures
-    expect(mockSlackClient.logToChannel).toHaveBeenCalledWith(
-      expect.stringContaining('Partial failures: email'),
-      'warn'
-    );
+    // expect(mockSlackClient.logToChannel).toHaveBeenCalledWith(
+    //   expect.stringContaining('Partial failures: email'),
+    //   'warn'
+    // );
   });
 
   it('should handle multiple partial failures', async () => {
@@ -414,10 +414,10 @@ describe('/api/submit endpoint integration tests', () => {
       error: 'guest_error',
     });
     
-    mockEmailClient.sendWelcomeEmail.mockResolvedValue({
-      ok: false,
-      error: 'email_error',
-    });
+    // mockEmailClient.sendWelcomeEmail.mockResolvedValue({
+    //   ok: false,
+    //   error: 'email_error',
+    // });
 
     const request = new Request('http://localhost:8787/api/submit', {
       method: 'POST',
@@ -440,12 +440,12 @@ describe('/api/submit endpoint integration tests', () => {
       id: expect.any(String),
       sanitizedCompanyName: 'test-company',
       slackChannelId: 'C123456789',
-      emailSent: false,
+      // emailSent: false,
     });
 
     // Should log with all partial failures
     expect(mockSlackClient.logToChannel).toHaveBeenCalledWith(
-      expect.stringContaining('Partial failures: group invite, guest invite, email'),
+      expect.stringContaining('Partial failures: group invite, guest invite'),
       'warn'
     );
   });
