@@ -83,6 +83,9 @@ const worker = workerModule.default;
 
 // Mock environment
 const mockEnv: Env = {
+  ASSETS: {
+    fetch: vi.fn().mockResolvedValue(new Response('mock asset')),
+  } as unknown as Fetcher,
   SLACK_BOT_TOKEN: 'xoxb-mock-token',
   SLACK_TEAM_ID: 'T123456789',
   SLACK_LOG_CHANNEL_ID: 'C123456789',

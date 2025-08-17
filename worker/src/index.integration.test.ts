@@ -29,6 +29,9 @@ vi.mock('./lib/slack', () => ({
 
 describe('/api/submit endpoint integration tests', () => {
   const mockEnv: Env = {
+    ASSETS: {
+      fetch: vi.fn(async () => new Response('')), // Mock Fetcher
+    } as unknown as Fetcher,
     SLACK_BOT_TOKEN: 'test-bot-token',
     SLACK_TEAM_ID: 'test-team-id',
     SLACK_LOG_CHANNEL_ID: 'test-log-channel',
