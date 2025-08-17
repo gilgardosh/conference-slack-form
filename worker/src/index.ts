@@ -12,7 +12,7 @@ import {
 import { validateAndSanitize, validateAndSanitizePreview } from './utils/validation';
 import { checkIpRateLimit, checkEmailRateLimit } from './lib/rateLimiter';
 import { createSlackClient } from './lib/slack';
-import { sendWelcomeEmail } from './lib/email';
+// import { sendWelcomeEmail } from './lib/email';
 
 // Create router instance
 const router = Router();
@@ -233,7 +233,7 @@ router.post('/api/submit', async (request: Request, env: Env): Promise<Response>
     // Track errors for partial success scenarios
     let groupInviteError = false;
     let guestInviteError = false;
-    let emailSent = true;
+    // let emailSent = true;
 
     // 6. Invite @guild group
     const groupInviteResult = await slackClient.inviteGroup(channelId);
@@ -256,27 +256,27 @@ router.post('/api/submit', async (request: Request, env: Env): Promise<Response>
     }
 
     // 8. Send Postmark email
-    const channelUrl = `https://app.slack.com/client/${env.SLACK_TEAM_ID}/${channelId}`;
-    const emailResult = await sendWelcomeEmail({
-      companyName: validationResult.value.companyName,
-      email,
-      channelName,
-      channelUrl,
-    }, env.POSTMARK_API_KEY);
+    // const channelUrl = `https://app.slack.com/client/${env.SLACK_TEAM_ID}/${channelId}`;
+    // const emailResult = await sendWelcomeEmail({
+    //   companyName: validationResult.value.companyName,
+    //   email,
+    //   channelName,
+    //   channelUrl,
+    // }, env.POSTMARK_API_KEY);
 
-    if (!emailResult.ok) {
-      emailSent = false;
-      await slackClient.logToChannel(
-        `Email sending failed for ${email}: ${emailResult.error}`,
-        'warn'
-      );
-    }
+    // if (!emailResult.ok) {
+    //   emailSent = false;
+    //   await slackClient.logToChannel(
+    //     `Email sending failed for ${email}: ${emailResult.error}`,
+    //     'warn'
+    //   );
+    // }
 
     // 9. Log success (with any partial failures noted)
     const partialFailures = [];
     if (groupInviteError) partialFailures.push('group invite');
     if (guestInviteError) partialFailures.push('guest invite');
-    if (!emailSent) partialFailures.push('email');
+    // if (!emailSent) partialFailures.push('email');
 
     const logMessage = partialFailures.length > 0
       ? `Submission processed for ${email} (company: ${validationResult.value.companyName} -> ${sanitizedCompanyName}), channel: ${channelName} (${channelId}). Partial failures: ${partialFailures.join(', ')}`
@@ -292,9 +292,9 @@ router.post('/api/submit', async (request: Request, env: Env): Promise<Response>
       slackChannelId: channelId,
     };
 
-    if (!emailSent) {
-      response.emailSent = false;
-    }
+    // if (!emailSent) {
+    //   response.emailSent = false;
+    // }
 
     return jsonResponse(response, 200, {
       'X-RateLimit-Limit': rateLimit.toString(),
