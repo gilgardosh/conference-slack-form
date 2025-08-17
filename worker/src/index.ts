@@ -343,6 +343,14 @@ router.all('/api/*', (): Response => {
 });
 
 /**
+ * Static file serving - serves the React client app
+ */
+router.get('*', (request: Request, env: Env) => {
+  // Use the ASSETS binding to serve static files
+  return env.ASSETS.fetch(request);
+});
+
+/**
  * Main worker export
  */
 export default {

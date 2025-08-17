@@ -2,15 +2,15 @@ name = "conference-slack-form-worker"
 main = "src/index.ts"
 compatibility_date = "2023-07-10"
 
-# Static assets configuration
-[site]
-bucket = "./static"
-
 [env.development]
 name = "conference-slack-form-worker-dev"
 
 [env.production]
 name = "conference-slack-form-worker"
+
+[assets]
+directory = "./static"
+binding = "ASSETS"
 
 account_id = "6d5bc18cd8d13babe7ed321adba3d8ae"
 # Environment variables (set via wrangler secret put)

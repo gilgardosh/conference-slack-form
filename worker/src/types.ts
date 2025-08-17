@@ -2,6 +2,8 @@
  * Environment variables interface for the Cloudflare Worker
  */
 export interface Env {
+  ASSETS: Fetcher;
+
   SLACK_BOT_TOKEN: string;
   SLACK_TEAM_ID: string;
   SLACK_LOG_CHANNEL_ID: string;

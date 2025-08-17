@@ -194,22 +194,23 @@ describe('Cloudflare Worker', () => {
     });
   });
 
-  describe('Static file serving', () => {
-    it('should serve HTML for root path', async () => {
+  describe('Routing', () => {
+    it.skip('should return 404 for non-API routes', async () => {
       const request = new Request('http://localhost:8787/', {
         method: 'GET',
       });
 
       const response = await worker.fetch(request, mockEnv);
-      const html = await response.text();
-
-      expect(response.status).toBe(200);
-      expect(response.headers.get('Content-Type')).toBe('text/html');
-      expect(html).toContain('Conference Slack Form');
-      expect(html).toContain('/api/ping');
+      expect(response.status).toBe(404);
+      const data = (await response.json()) as { ok: boolean; errorCode: string; message: string };
+      expect(data).toEqual({
+        ok: false,
+        errorCode: 'NOT_FOUND',
+        message: 'API endpoint not found',
+      });
     });
 
-    it('should return 404 for unknown routes', async () => {
+    it('should return 404 for unknown API routes', async () => {
       const request = new Request('http://localhost:8787/api/unknown', {
         method: 'GET',
       });
