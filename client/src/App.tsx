@@ -80,6 +80,10 @@ function App() {
         </div>
 
         <div className="max-w-md mx-auto">
+          <div className="flex justify-center mb-6">
+            <img src="/full-dark-logo.svg" alt="Company Logo" className="h-20 block dark:hidden" />
+            <img src="/full-white-logo.svg" alt="Company Logo" className="h-20 hidden dark:block" />
+          </div>
           <div className="bg-gray-50 dark:bg-gray-800 rounded-lg shadow-lg p-6">
             <p className="text-gray-600 dark:text-gray-300 mb-6">
               Join our conference Slack workspace. We&apos;ll create a dedicated channel for your company.
