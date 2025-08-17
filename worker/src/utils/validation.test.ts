@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { 
   sanitizeCompanyName, 
   isFreeEmailDomain, 
-  validateAndSanitize 
+  validateAndSanitize,
+  validateAndSanitizePreview
 } from './validation';
 
 describe('sanitizeCompanyName', () => {
@@ -214,6 +215,76 @@ describe('validateAndSanitize', () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.errors.length).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('validateAndSanitizePreview', () => {
+  it('validates and sanitizes with only company name', () => {
+    const input = {
+      companyName: 'ACME Corp',
+    };
+    
+    const result = validateAndSanitizePreview(input);
+    
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.companyName).toBe('ACME Corp');
+      expect(result.value.email).toBe('');
+      expect(result.value.sanitizedCompanyName).toBe('acme-corp');
+    }
+  });
+
+  it('rejects input without company name', () => {
+    const input = {
+      email: 'test@example.com',
+    };
+    
+    const result = validateAndSanitizePreview(input);
+    
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.errors).toContain('companyName: Required');
+    }
+  });
+
+  it('rejects empty company name', () => {
+    const input = {
+      companyName: '',
+    };
+    
+    const result = validateAndSanitizePreview(input);
+    
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.errors).toContain('companyName: Company name is required');
+    }
+  });
+
+  it('rejects company name that becomes empty after sanitization', () => {
+    const input = {
+      companyName: '🎉🎊!!!',
+    };
+    
+    const result = validateAndSanitizePreview(input);
+    
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.errors).toContain('Company name contains no valid characters after sanitization');
+    }
+  });
+
+  it('handles complex company name sanitization', () => {
+    const input = {
+      companyName: '  Café 🚀 & Associates Inc.  ',
+    };
+    
+    const result = validateAndSanitizePreview(input);
+    
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.companyName).toBe('  Café 🚀 & Associates Inc.  ');
+      expect(result.value.sanitizedCompanyName).toBe('cafe-associates-inc');
     }
   });
 });

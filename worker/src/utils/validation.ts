@@ -6,7 +6,13 @@ const FormSubmissionSchema = z.object({
   email: z.string().email('Invalid email format'),
 });
 
+// Zod schema for sanitize preview (only company name needed)
+const SanitizePreviewSchema = z.object({
+  companyName: z.string().min(1, 'Company name is required'),
+});
+
 export type FormSubmissionInput = z.infer<typeof FormSubmissionSchema>;
+export type SanitizePreviewInput = z.infer<typeof SanitizePreviewSchema>;
 
 export interface ValidationResult {
   ok: true;
@@ -71,6 +77,51 @@ export function isFreeEmailDomain(email: string): boolean {
   ];
   
   return freeProviders.includes(domain.toLowerCase());
+}
+
+/**
+ * Validate and sanitize company name for preview (only requires company name)
+ */
+export function validateAndSanitizePreview(input: unknown): ValidationResult | ValidationError {
+  try {
+    // Validate input shape with Zod
+    const validatedInput = SanitizePreviewSchema.parse(input);
+    
+    // Sanitize company name
+    const sanitizedCompanyName = sanitizeCompanyName(validatedInput.companyName);
+    
+    // Check if sanitized company name is empty after processing
+    if (!sanitizedCompanyName) {
+      return {
+        ok: false,
+        errors: ['Company name contains no valid characters after sanitization']
+      };
+    }
+    
+    return {
+      ok: true,
+      value: {
+        companyName: validatedInput.companyName,
+        email: '', // Not needed for preview
+        sanitizedCompanyName
+      }
+    };
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      const errors = error.errors.map(err => 
+        err.path.length > 0 ? `${err.path.join('.')}: ${err.message}` : err.message
+      );
+      return {
+        ok: false,
+        errors
+      };
+    }
+    
+    return {
+      ok: false,
+      errors: ['Validation failed with unknown error']
+    };
+  }
 }
 
 /**

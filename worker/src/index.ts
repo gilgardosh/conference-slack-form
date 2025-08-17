@@ -9,7 +9,7 @@ import {
   jsonResponse, 
   errorResponse, 
 } from './utils';
-import { validateAndSanitize } from './utils/validation';
+import { validateAndSanitize, validateAndSanitizePreview } from './utils/validation';
 import { checkIpRateLimit, checkEmailRateLimit } from './lib/rateLimiter';
 import { createSlackClient } from './lib/slack';
 import { sendWelcomeEmail } from './lib/email';
@@ -64,7 +64,7 @@ router.post('/api/sanitize-preview', async (request: Request): Promise<Response>
     }
 
     // Validate and sanitize input (without rate limit increment)
-    const validationResult = validateAndSanitize(body);
+    const validationResult = validateAndSanitizePreview(body);
     
     if (!validationResult.ok) {
       return new Response(JSON.stringify({
