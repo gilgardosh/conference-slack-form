@@ -12,6 +12,7 @@ name = "conference-slack-form-worker-dev"
 [env.production]
 name = "conference-slack-form-worker"
 
+account_id = "6d5bc18cd8d13babe7ed321adba3d8ae"
 # Environment variables (set via wrangler secret put)
 # SLACK_BOT_TOKEN - Slack Bot User OAuth Token
 # SLACK_TEAM_ID - Your Slack workspace/team ID (also used for group invitations)
