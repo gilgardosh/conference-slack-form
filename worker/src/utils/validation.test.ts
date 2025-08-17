@@ -52,6 +52,7 @@ describe('sanitizeCompanyName', () => {
   });
 
   it('returns empty string for input with no valid characters', () => {
+    expect(sanitizeCompanyName('')).toBe('');
     expect(sanitizeCompanyName('🚀🌟✨')).toBe('');
     expect(sanitizeCompanyName('!@#$%^&*()')).toBe('');
     expect(sanitizeCompanyName('   ')).toBe('');
