@@ -3,7 +3,7 @@ import { Form } from './components/Form';
 import { ConfirmationModal } from './components/ConfirmationModal';
 import { DarkModeToggle } from './components/DarkModeToggle';
 import type { FormData } from './types';
-import { submitForm } from './utils';
+import { submitSubmission } from './lib/api';
 
 function App() {
   const [formData, setFormData] = useState<FormData>({ companyName: '', email: '' });
@@ -24,16 +24,33 @@ function App() {
     setSubmitError('');
 
     try {
-      const response = await submitForm(formData);
+      const response = await submitSubmission({
+        companyName: formData.companyName,
+        email: formData.email,
+      });
       
       if (response.ok) {
         setSubmitSuccess(true);
-        setShowModal(false);
         setShouldResetForm(true);
-        // Reset success state after a delay
-        setTimeout(() => setSubmitSuccess(false), 3000);
+        // Clear form and close modal after showing success
+        setTimeout(() => {
+          setShowModal(false);
+          setSubmitSuccess(false);
+        }, 2000);
       } else {
-        setSubmitError(response.message || 'Submission failed. Please try again.');
+        // Handle specific error cases
+        if (response.rateLimitInfo) {
+          // Rate limit error (429)
+          const { type, remaining } = response.rateLimitInfo;
+          setSubmitError(`${response.error} (${type} rate limit, ${remaining} remaining)`);
+        } else if (response.error === 'Submission failed — we\'re looking into it') {
+          // Slack error (502) - log to console for debugging
+          console.error('Slack integration error:', response.error);
+          setSubmitError(response.error);
+        } else {
+          // Other errors
+          setSubmitError(response.error || 'Submission failed. Please try again.');
+        }
       }
     } catch (error) {
       setSubmitError('Network error. Please check your connection and try again.');
@@ -45,6 +62,7 @@ function App() {
   const handleCancel = () => {
     setShowModal(false);
     setSubmitError('');
+    setSubmitSuccess(false);
   };
 
   const handleFormReset = () => {
@@ -97,6 +115,8 @@ function App() {
         onConfirm={handleConfirm}
         onCancel={handleCancel}
         isLoading={isSubmitting}
+        error={submitError}
+        success={submitSuccess}
       />
     </div>
   );
