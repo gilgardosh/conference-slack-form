@@ -48,6 +48,11 @@ interface SlackConversationInviteResponse extends SlackApiResponse {
   data?: unknown;
 }
 
+interface SlackInviteSharedResponse extends SlackApiResponse {
+  invite_id?: string;
+  is_legacy_shared_channel?: boolean;
+}
+
 interface SlackChatPostMessageResponse extends SlackApiResponse {
   ts?: string; // timestamp
 }
@@ -228,28 +233,21 @@ export class SlackClient {
   }
 
   /**
-   * Create a single-channel guest invite for an email
-   * Note: This simulates the expected API call. In production, this might require
-   * admin API access and specific scopes like admin.invites:write
+   * Create a single-channel guest invite for an email using conversations.inviteShared
    */
   public async inviteGuest(
     email: string,
     channelId: string
   ): Promise<SlackResult<SlackInviteResult>> {
-    // Note: The actual Slack API for guest invites may require different endpoints
-    // This is a simulation based on common patterns. Real implementation might use:
-    // - admin.invites.send for workspace invites
-    // - admin.users.invite for single-channel guests
-    // Required scopes: admin.invites:write, admin.users:write
+    // Note: This uses the conversations.inviteShared endpoint to invite an external user
+    // to a single channel via email. This is part of the Slack Connect feature.
+    // Required scopes: conversations.connect:write
 
-    const result = await this.slackRequest<SlackApiResponse>(
-      'admin.users.invite',
+    const result = await this.slackRequest<SlackInviteSharedResponse>(
+      'conversations.inviteShared',
       {
-        email,
-        channel_ids: [channelId],
-        guest_expiration_ts: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60, // 30 days
-        is_restricted: true, // Single channel guest
-        is_ultra_restricted: false,
+        channel: channelId,
+        emails: [email],
       }
     );
 

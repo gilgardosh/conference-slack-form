@@ -274,37 +274,42 @@ describe('SlackClient', () => {
   describe('inviteGuest', () => {
     it('should invite guest successfully', async () => {
       const mockResponse = {
-        ok: true
+        ok: true,
+        invite_id: 'I1234567890',
+        is_legacy_shared_channel: false,
       };
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         headers: { get: () => null },
-        json: () => Promise.resolve(mockResponse)
+        json: () => Promise.resolve(mockResponse),
       });
 
-      const result = await slackClient.inviteGuest('test@example.com', 'C1234567890');
+      const result = await slackClient.inviteGuest(
+        'test@example.com',
+        'C1234567890'
+      );
 
       expect(result).toEqual({
         ok: true,
         invited: true,
-        details: 'Guest invite sent to test@example.com for channel C1234567890'
+        details: 'Guest invite sent to test@example.com for channel C1234567890',
       });
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://slack.com/api/admin.users.invite',
-        expect.objectContaining({
+        'https://slack.com/api/conversations.inviteShared',
+        {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${TEST_TOKEN}`,
-            'Content-Type': 'application/json'
+            Authorization: `Bearer ${TEST_TOKEN}`,
+            'Content-Type': 'application/json',
           },
-          body: expect.stringContaining('"email":"test@example.com"') &&
-                expect.stringContaining('"channel_ids":["C1234567890"]') &&
-                expect.stringContaining('"is_restricted":true') &&
-                expect.stringContaining('"is_ultra_restricted":false')
-        })
+          body: JSON.stringify({
+            channel: 'C1234567890',
+            emails: ['test@example.com'],
+          }),
+        }
       );
     });
 
