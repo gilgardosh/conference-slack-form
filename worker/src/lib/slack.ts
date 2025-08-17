@@ -58,18 +58,18 @@ export class SlackClient {
   private readonly token: string;
   private readonly teamId: string;
   private readonly logChannelId: string;
-  private readonly fetchFn: typeof fetch;
+  private readonly fetchFn: typeof fetch = fetch;
 
   constructor(
     token: string,
     teamId: string,
     logChannelId: string,
-    fetchFn: typeof fetch = fetch
+    fetchFn?: typeof fetch
   ) {
     this.token = token;
     this.teamId = teamId;
     this.logChannelId = logChannelId;
-    this.fetchFn = fetchFn;
+    this.fetchFn = fetchFn || fetch;
   }
 
   /**
@@ -80,10 +80,11 @@ export class SlackClient {
     body: Record<string, unknown>
   ): Promise<T | SlackError> {
     try {
-      const response = await this.fetchFn(`https://slack.com/api/${endpoint}`, {
+      const fetch = this.fetchFn;
+      const response = await fetch(`https://slack.com/api/${endpoint}`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.token}`,
+          Authorization: `Bearer ${this.token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(body),
@@ -91,7 +92,9 @@ export class SlackClient {
 
       // Handle rate limiting
       if (response.status === 429) {
-        const retryAfter = parseInt(response.headers.get('Retry-After') || '60');
+        const retryAfter = parseInt(
+          response.headers.get('Retry-After') || '60'
+        );
         return {
           ok: false,
           error: 'rate_limited',
@@ -108,8 +111,8 @@ export class SlackClient {
         };
       }
 
-      const data = await response.json() as T;
-      
+      const data = (await response.json()) as T;
+
       if (!data.ok) {
         return {
           ok: false,
@@ -123,7 +126,8 @@ export class SlackClient {
       return {
         ok: false,
         error: 'network_error',
-        details: error instanceof Error ? error.message : 'Unknown network error',
+        details:
+          error instanceof Error ? error.message : 'Unknown network error',
       };
     }
   }
@@ -138,15 +142,18 @@ export class SlackClient {
   /**
    * Create a channel with automatic name collision handling
    */
-  public async createChannel(sanitizedName: string): Promise<SlackResult<SlackChannel>> {
+  public async createChannel(
+    sanitizedName: string
+  ): Promise<SlackResult<SlackChannel>> {
     const baseChannelName = this.createChannelName(sanitizedName);
     let attemptCount = 0;
     const maxAttempts = 10;
 
     while (attemptCount < maxAttempts) {
-      const channelName = attemptCount === 0 
-        ? baseChannelName 
-        : `${baseChannelName}-${attemptCount + 1}`;
+      const channelName =
+        attemptCount === 0
+          ? baseChannelName
+          : `${baseChannelName}-${attemptCount + 1}`;
 
       const result = await this.slackRequest<SlackChannelCreateResponse>(
         'conversations.create',
@@ -163,7 +170,7 @@ export class SlackClient {
           attemptCount++;
           continue;
         }
-        
+
         // For other errors, return immediately
         return result as SlackError;
       }
@@ -181,7 +188,8 @@ export class SlackClient {
       return {
         ok: false,
         error: 'invalid_response',
-        details: 'Channel creation succeeded but response format was unexpected',
+        details:
+          'Channel creation succeeded but response format was unexpected',
       };
     }
 
@@ -196,7 +204,9 @@ export class SlackClient {
   /**
    * Invite the configured guild group to a channel
    */
-  public async inviteGroup(channelId: string): Promise<SlackResult<SlackInviteResult>> {
+  public async inviteGroup(
+    channelId: string
+  ): Promise<SlackResult<SlackInviteResult>> {
     const result = await this.slackRequest<SlackConversationInviteResponse>(
       'conversations.invite',
       {
@@ -221,19 +231,22 @@ export class SlackClient {
    * Note: This simulates the expected API call. In production, this might require
    * admin API access and specific scopes like admin.invites:write
    */
-  public async inviteGuest(email: string, channelId: string): Promise<SlackResult<SlackInviteResult>> {
+  public async inviteGuest(
+    email: string,
+    channelId: string
+  ): Promise<SlackResult<SlackInviteResult>> {
     // Note: The actual Slack API for guest invites may require different endpoints
     // This is a simulation based on common patterns. Real implementation might use:
     // - admin.invites.send for workspace invites
     // - admin.users.invite for single-channel guests
     // Required scopes: admin.invites:write, admin.users:write
-    
+
     const result = await this.slackRequest<SlackApiResponse>(
       'admin.users.invite',
       {
         email,
         channel_ids: [channelId],
-        guest_expiration_ts: Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60), // 30 days
+        guest_expiration_ts: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60, // 30 days
         is_restricted: true, // Single channel guest
         is_ultra_restricted: false,
       }
@@ -254,7 +267,7 @@ export class SlackClient {
    * Log a message to the configured log channel
    */
   public async logToChannel(
-    message: string, 
+    message: string,
     level: 'info' | 'warn' | 'error' = 'info'
   ): Promise<SlackResult<SlackLogResult>> {
     const emoji = {

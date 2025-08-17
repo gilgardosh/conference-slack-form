@@ -141,7 +141,7 @@ router.post('/api/submit', async (request: Request, env: Env): Promise<Response>
       });
     }
 
-    const { email, sanitizedCompanyName } = validationResult.value;
+    const { email, sanitizedCompanyName, companyName } = validationResult.value;
 
     // Get rate limit settings from environment with defaults
     const rateLimit = parseInt(env.RATE_LIMIT || '10', 10);
@@ -202,6 +202,15 @@ router.post('/api/submit', async (request: Request, env: Env): Promise<Response>
       env.SLACK_BOT_TOKEN,
       env.SLACK_TEAM_ID,
       env.SLACK_LOG_CHANNEL_ID
+    );
+
+
+    // Log initiation
+    await slackClient.logToChannel(
+      `Channel creation initiated for \`${companyName}\`
+- user: \`${email}\`
+- sanitized: \`${sanitizedCompanyName}\``,
+      'info'
     );
 
     // 4. Create Slack channel
