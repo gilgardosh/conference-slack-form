@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { 
-  RateLimiter, 
-  checkIpRateLimit, 
-  checkEmailRateLimit, 
-  getRateLimiter 
+import {
+  RateLimiter,
+  checkIpRateLimit,
+  checkEmailRateLimit,
+  getRateLimiter,
 } from './rateLimiter';
 
 describe('RateLimiter', () => {
@@ -42,7 +42,11 @@ describe('RateLimiter', () => {
       expect(blockedResult.remaining).toBe(0);
 
       // Should still be blocked
-      const stillBlockedResult = rateLimiter.checkAndIncrement('test:key', 3, 60);
+      const stillBlockedResult = rateLimiter.checkAndIncrement(
+        'test:key',
+        3,
+        60
+      );
       expect(stillBlockedResult.allowed).toBe(false);
       expect(stillBlockedResult.remaining).toBe(0);
     });
@@ -95,9 +99,9 @@ describe('RateLimiter', () => {
     it('should provide accurate resetAt timestamp', () => {
       const now = Date.now();
       const windowSec = 60;
-      
+
       const result = rateLimiter.checkAndIncrement('test:key', 3, windowSec);
-      
+
       expect(result.resetAt).toBeGreaterThanOrEqual(now + windowSec * 1000);
       expect(result.resetAt).toBeLessThanOrEqual(now + windowSec * 1000 + 100); // Allow 100ms tolerance
     });
@@ -108,10 +112,12 @@ describe('RateLimiter', () => {
       const limit = 5;
       const windowSec = 60;
       const burstSize = 10;
-      
+
       const results = [];
       for (let i = 0; i < burstSize; i++) {
-        results.push(rateLimiter.checkAndIncrement('burst:test', limit, windowSec));
+        results.push(
+          rateLimiter.checkAndIncrement('burst:test', limit, windowSec)
+        );
       }
 
       // First 5 should be allowed
@@ -130,18 +136,20 @@ describe('RateLimiter', () => {
     it('should handle concurrent-like bursts with same resetAt', () => {
       const limit = 3;
       const windowSec = 60;
-      
+
       // Simulate rapid succession requests
       const results = [];
-      
+
       for (let i = 0; i < 5; i++) {
-        results.push(rateLimiter.checkAndIncrement('concurrent:test', limit, windowSec));
+        results.push(
+          rateLimiter.checkAndIncrement('concurrent:test', limit, windowSec)
+        );
       }
 
       // All should have the same resetAt (within tolerance)
       const resetTimes = results.map(r => r.resetAt);
       const firstResetTime = resetTimes[0]!;
-      
+
       resetTimes.forEach(resetTime => {
         expect(Math.abs(resetTime - firstResetTime)).toBeLessThan(10); // 10ms tolerance
       });
@@ -174,7 +182,7 @@ describe('RateLimiter', () => {
 
     it('should return empty status for non-existent key', () => {
       const status = rateLimiter.getStatus('nonexistent:key', 10);
-      
+
       expect(status.count).toBe(0);
       expect(status.remaining).toBe(10);
       expect(status.resetAt).toBe(null);
@@ -185,13 +193,13 @@ describe('RateLimiter', () => {
     it('should clear all entries', () => {
       rateLimiter.checkAndIncrement('key1', 3, 60);
       rateLimiter.checkAndIncrement('key2', 3, 60);
-      
+
       expect(rateLimiter.size()).toBe(2);
-      
+
       rateLimiter.clear();
-      
+
       expect(rateLimiter.size()).toBe(0);
-      
+
       // Should start fresh
       const result = rateLimiter.checkAndIncrement('key1', 3, 60);
       expect(result.remaining).toBe(2);
@@ -205,7 +213,7 @@ describe('RateLimiter', () => {
         // Add entries
         rateLimiter.checkAndIncrement('key1', 3, 1); // 1 second window
         rateLimiter.checkAndIncrement('key2', 3, 2); // 2 second window
-        
+
         expect(rateLimiter.size()).toBe(2);
 
         // Advance time by 1.5 seconds
@@ -258,7 +266,7 @@ describe('Helper functions', () => {
       // Fill up limit for IP1
       checkIpRateLimit(ip1, limit, windowSec);
       checkIpRateLimit(ip1, limit, windowSec);
-      
+
       const blocked = checkIpRateLimit(ip1, limit, windowSec);
       expect(blocked.allowed).toBe(false);
 
@@ -294,7 +302,7 @@ describe('Helper functions', () => {
       // Fill up limit for email1
       const firstEmail1 = checkEmailRateLimit(email1, limit, windowSec);
       expect(firstEmail1.allowed).toBe(true);
-      
+
       const secondEmail1 = checkEmailRateLimit(email1, limit, windowSec);
       expect(secondEmail1.allowed).toBe(false);
 
@@ -308,18 +316,18 @@ describe('Helper functions', () => {
     it('should use the same global instance', () => {
       const ip = '10.0.0.1';
       const email = 'test@example.com';
-      
+
       // Use helper functions
       checkIpRateLimit(ip, 3, 60);
       checkEmailRateLimit(email, 3, 60);
-      
+
       // Should see both keys in global instance
       expect(getRateLimiter().size()).toBe(2);
-      
+
       // Direct access should show the same state
       const ipStatus = getRateLimiter().getStatus(`ip:${ip}`, 3);
       const emailStatus = getRateLimiter().getStatus(`email:${email}`, 3);
-      
+
       expect(ipStatus.count).toBe(1);
       expect(emailStatus.count).toBe(1);
     });
@@ -399,7 +407,7 @@ describe('Edge cases and stress testing', () => {
       'key with spaces',
       'key-with-dashes',
       'key_with_underscores',
-      'key.with.dots'
+      'key.with.dots',
     ];
 
     specialKeys.forEach(key => {

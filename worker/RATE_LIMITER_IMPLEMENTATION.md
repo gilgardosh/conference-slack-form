@@ -7,6 +7,7 @@ I have successfully implemented the rate limiter for the Cloudflare Worker as re
 ### 🔧 Core Implementation
 
 **File: `worker/src/lib/rateLimiter.ts`**
+
 - ✅ In-memory rate limiter using Map-based storage
 - ✅ `checkAndIncrement(key, limit, windowSec)` method returning `{allowed, remaining, resetAt}`
 - ✅ Two helper functions: `checkIpRateLimit()` and `checkEmailRateLimit()`
@@ -18,6 +19,7 @@ I have successfully implemented the rate limiter for the Cloudflare Worker as re
 ### 🔌 Integration
 
 **File: `worker/src/index.ts`**
+
 - ✅ Rate limiter integrated into `/api/submit` endpoint
 - ✅ IP rate limiting checked first (before JSON parsing)
 - ✅ Email rate limiting checked after validation
@@ -27,10 +29,11 @@ I have successfully implemented the rate limiter for the Cloudflare Worker as re
 ### 📝 Response Format
 
 **Rate Limit Error (429):**
+
 ```json
 {
   "ok": false,
-  "errorCode": "rate_limit", 
+  "errorCode": "rate_limit",
   "message": "Rate limit exceeded",
   "metadata": {
     "type": "ip" | "email",
@@ -40,14 +43,16 @@ I have successfully implemented the rate limiter for the Cloudflare Worker as re
 ```
 
 **Rate Limit Headers:**
+
 - `X-RateLimit-Limit`: Maximum requests allowed
 - `X-RateLimit-Remaining-IP`: Remaining requests for IP
-- `X-RateLimit-Remaining-Email`: Remaining requests for email  
+- `X-RateLimit-Remaining-Email`: Remaining requests for email
 - `X-RateLimit-Reset`: Unix timestamp when limits reset
 
 ### 🧪 Testing
 
 **Unit Tests (`rateLimiter.test.ts`): 21 tests**
+
 - ✅ Basic functionality (allow/block within limits)
 - ✅ Time window expiry and reset
 - ✅ Burst request handling
@@ -56,6 +61,7 @@ I have successfully implemented the rate limiter for the Cloudflare Worker as re
 - ✅ Utility methods (clear, cleanup, getStatus)
 
 **Integration Tests (`rateLimiter.integration.test.ts`): 14 tests**
+
 - ✅ IP-based rate limiting in real HTTP context
 - ✅ Email-based rate limiting in real HTTP context
 - ✅ Combined rate limiting scenarios
@@ -75,6 +81,7 @@ I have successfully implemented the rate limiter for the Cloudflare Worker as re
 ### ⚙️ Configuration
 
 Rate limiting is configurable via environment variables:
+
 - `RATE_LIMIT`: Max requests per window (default: 10)
 - `RATE_LIMIT_WINDOW_SEC`: Time window in seconds (default: 3600)
 
@@ -91,6 +98,7 @@ Rate limiting is configurable via environment variables:
 ### ⚠️ Documented Limitations
 
 **Single-Instance Design:**
+
 - ✅ Documented limitation for multi-instance deployments
 - ✅ Explained that each worker instance maintains separate counters
 - ✅ Suggested alternatives (KV, Durable Objects, external services)

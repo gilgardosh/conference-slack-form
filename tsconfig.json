@@ -20,17 +20,6 @@
     "declarationMap": true,
     "sourceMap": true
   },
-  "include": [
-    "worker/**/*",
-    "client/**/*",
-    "shared/**/*",
-    "*.ts",
-    "*.tsx"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "build",
-    "coverage"
-  ]
+  "include": ["worker/**/*", "client/**/*", "shared/**/*", "*.ts", "*.tsx"],
+  "exclude": ["node_modules", "dist", "build", "coverage"]
 }

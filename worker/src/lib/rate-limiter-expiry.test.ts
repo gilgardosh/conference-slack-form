@@ -3,7 +3,11 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { getRateLimiter, checkIpRateLimit, checkEmailRateLimit } from '../lib/rateLimiter';
+import {
+  getRateLimiter,
+  checkIpRateLimit,
+  checkEmailRateLimit,
+} from '../lib/rateLimiter';
 
 describe('Rate Limiter Expiry', () => {
   let originalNow: typeof Date.now;
@@ -21,7 +25,7 @@ describe('Rate Limiter Expiry', () => {
     const ip = '192.168.1.100';
     const limit = 2;
     const windowSec = 10; // 10 seconds
-    
+
     // Mock initial time
     let currentTime = 1000000;
     Date.now = vi.fn(() => currentTime);
@@ -41,7 +45,7 @@ describe('Rate Limiter Expiry', () => {
     expect(result3.remaining).toBe(0);
 
     // Move time forward by window duration + 1ms
-    currentTime += (windowSec * 1000) + 1;
+    currentTime += windowSec * 1000 + 1;
 
     // Should be allowed again
     const result4 = checkIpRateLimit(ip, limit, windowSec);
@@ -53,7 +57,7 @@ describe('Rate Limiter Expiry', () => {
     const email = 'test@example.com';
     const limit = 2;
     const windowSec = 10; // 10 seconds
-    
+
     // Mock initial time
     let currentTime = 2000000;
     Date.now = vi.fn(() => currentTime);
@@ -73,7 +77,7 @@ describe('Rate Limiter Expiry', () => {
     expect(result3.remaining).toBe(0);
 
     // Move time forward by window duration + 1ms
-    currentTime += (windowSec * 1000) + 1;
+    currentTime += windowSec * 1000 + 1;
 
     // Should be allowed again
     const result4 = checkEmailRateLimit(email, limit, windowSec);
@@ -85,7 +89,7 @@ describe('Rate Limiter Expiry', () => {
     const ip = '192.168.1.101';
     const limit = 3;
     const windowSec = 60; // 1 minute
-    
+
     // Mock initial time
     let currentTime = 3000000;
     Date.now = vi.fn(() => currentTime);
@@ -122,7 +126,7 @@ describe('Rate Limiter Expiry', () => {
     const email = 'test2@example.com';
     const limit = 1;
     const windowSec = 30;
-    
+
     let currentTime = 4000000;
     Date.now = vi.fn(() => currentTime);
 
@@ -134,7 +138,7 @@ describe('Rate Limiter Expiry', () => {
     // Should be blocked and reset time should be set correctly
     const result2 = checkEmailRateLimit(email, limit, windowSec);
     expect(result2.allowed).toBe(false);
-    expect(result2.resetAt).toBe(currentTime + (windowSec * 1000));
+    expect(result2.resetAt).toBe(currentTime + windowSec * 1000);
 
     // Move time to just before reset
     currentTime = result2.resetAt - 1;

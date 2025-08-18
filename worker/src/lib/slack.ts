@@ -105,22 +105,23 @@ export class SlackClient {
         });
       }
       const fetch = this.fetchFn;
-      const requestContent: RequestInit = method === 'GET'
-        ? {
-            method: 'GET',
-            headers: {
-              Authorization: `Bearer ${this.token}`,
-              'Content-Type': 'application/json',
-            },
-          }
-        : {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${this.token}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(body),
-          };
+      const requestContent: RequestInit =
+        method === 'GET'
+          ? {
+              method: 'GET',
+              headers: {
+                Authorization: `Bearer ${this.token}`,
+                'Content-Type': 'application/json',
+              },
+            }
+          : {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${this.token}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(body),
+            };
       const response = await fetch(url.toString(), requestContent);
 
       // Handle rate limiting

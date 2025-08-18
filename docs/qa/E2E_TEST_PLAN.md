@@ -15,6 +15,7 @@ This document outlines manual testing steps to validate the form submission flow
 **Objective**: Validate that a normal submission works end-to-end
 
 **Steps**:
+
 1. Fill in the form with:
    - Company Name: "Test Company Inc."
    - Email: "test@example.com"
@@ -36,17 +37,20 @@ This document outlines manual testing steps to validate the form submission flow
 
 **Objective**: Test IP rate limiting error handling
 
-**Setup**: 
+**Setup**:
+
 - Submit multiple requests quickly to trigger IP rate limiting
 - Or modify worker code temporarily to return 429 with IP rate limit
 
 **Steps**:
+
 1. Fill in form with valid data
-2. Click "Submit" → "Confirm" 
+2. Click "Submit" → "Confirm"
 3. Immediately after success, submit another request
 4. Repeat until rate limit is hit
 
-**Expected Result**: 
+**Expected Result**:
+
 - Error message shows: "Rate limit exceeded (ip rate limit, X remaining)"
 - Modal stays open
 - User can retry or cancel
@@ -57,15 +61,18 @@ This document outlines manual testing steps to validate the form submission flow
 
 **Objective**: Test email rate limiting error handling
 
-**Setup**: 
+**Setup**:
+
 - Use the same email multiple times
 - Or modify worker code temporarily to return 429 with email rate limit
 
 **Steps**:
+
 1. Submit a successful request with email "test@example.com"
 2. Try to submit again with the same email
 
-**Expected Result**: 
+**Expected Result**:
+
 - Error message shows: "Rate limit exceeded (email rate limit, X remaining)"
 - Modal stays open
 - User can try with different email or wait
@@ -76,16 +83,19 @@ This document outlines manual testing steps to validate the form submission flow
 
 **Objective**: Test Slack service error handling
 
-**Setup**: 
+**Setup**:
+
 - Modify worker code temporarily to return 502 status
 - Or break Slack configuration to cause real 502 error
 
 **Steps**:
+
 1. Fill in form with valid data
 2. Click "Submit" → "Confirm"
 3. Wait for submission
 
-**Expected Result**: 
+**Expected Result**:
+
 - Error message shows: "Submission failed — we're looking into it"
 - Error is logged to browser console
 - Modal stays open for retry
@@ -99,11 +109,13 @@ This document outlines manual testing steps to validate the form submission flow
 **Steps**:
 
 **5a. Empty Fields**:
+
 1. Try to submit with empty company name
 2. Try to submit with empty email
 3. Try to submit with both empty
 
 **5b. Invalid Email**:
+
 1. Enter invalid email formats:
    - "invalid-email"
    - "@example.com"
@@ -111,9 +123,11 @@ This document outlines manual testing steps to validate the form submission flow
    - "test@invalid"
 
 **5c. Company Name Too Long**:
+
 1. Enter a company name longer than 67 characters
 
-**Expected Result**: 
+**Expected Result**:
+
 - Form validation prevents submission
 - Appropriate error messages show
 - Modal does not open for invalid data
@@ -124,16 +138,19 @@ This document outlines manual testing steps to validate the form submission flow
 
 **Objective**: Test network connectivity issues
 
-**Setup**: 
+**Setup**:
+
 - Stop the worker service
 - Or use browser dev tools to simulate network failure
 
 **Steps**:
+
 1. Fill in form with valid data
 2. Click "Submit" → "Confirm"
 3. Wait for request to fail
 
-**Expected Result**: 
+**Expected Result**:
+
 - Error message shows: "Network error. Please check your connection and try again."
 - Modal stays open for retry
 
@@ -144,6 +161,7 @@ This document outlines manual testing steps to validate the form submission flow
 **Objective**: Test company name sanitization preview
 
 **Steps**:
+
 1. Enter company names with special characters:
    - "My Company! 🚀"
    - "Test & Development Inc."
@@ -152,7 +170,8 @@ This document outlines manual testing steps to validate the form submission flow
 2. Click "Submit"
 3. Check sanitized preview in modal
 
-**Expected Result**: 
+**Expected Result**:
+
 - Special characters are removed/replaced
 - Emojis are removed
 - Spaces become hyphens
@@ -166,11 +185,13 @@ This document outlines manual testing steps to validate the form submission flow
 **Objective**: Test UI in both light and dark modes
 
 **Steps**:
+
 1. Toggle dark mode using the toggle button
 2. Test all the above scenarios in dark mode
 3. Verify all colors and contrasts are appropriate
 
-**Expected Result**: 
+**Expected Result**:
+
 - All UI elements work correctly in both modes
 - Error and success messages are readable
 - Modal appearance is consistent
@@ -182,12 +203,14 @@ This document outlines manual testing steps to validate the form submission flow
 **Objective**: Test UI on different screen sizes
 
 **Steps**:
+
 1. Test on desktop (1200px+ width)
 2. Test on tablet (768px-1199px width)
 3. Test on mobile (320px-767px width)
 4. Test form submission flow on each size
 
-**Expected Result**: 
+**Expected Result**:
+
 - Form is usable on all screen sizes
 - Modal fits properly on small screens
 - Touch interactions work on mobile
@@ -199,31 +222,40 @@ This document outlines manual testing steps to validate the form submission flow
 To test specific error scenarios, you can temporarily modify the worker response:
 
 ### Simulate 429 Rate Limit:
+
 ```typescript
 // In worker/src/index.ts, replace the submit handler with:
-return new Response(JSON.stringify({
-  ok: false,
-  message: "Rate limit exceeded",
-  metadata: { type: "email", remaining: 2 }
-}), { 
-  status: 429,
-  headers: { "Content-Type": "application/json" }
-});
+return new Response(
+  JSON.stringify({
+    ok: false,
+    message: 'Rate limit exceeded',
+    metadata: { type: 'email', remaining: 2 },
+  }),
+  {
+    status: 429,
+    headers: { 'Content-Type': 'application/json' },
+  }
+);
 ```
 
 ### Simulate 502 Slack Error:
+
 ```typescript
 // In worker/src/index.ts, replace the submit handler with:
-return new Response(JSON.stringify({
-  ok: false,
-  message: "Slack service unavailable"
-}), { 
-  status: 502,
-  headers: { "Content-Type": "application/json" }
-});
+return new Response(
+  JSON.stringify({
+    ok: false,
+    message: 'Slack service unavailable',
+  }),
+  {
+    status: 502,
+    headers: { 'Content-Type': 'application/json' },
+  }
+);
 ```
 
 ### Simulate Network Error:
+
 - Stop the worker service entirely
 - Or use browser Dev Tools → Network tab → "Offline" mode
 

@@ -24,18 +24,19 @@ This is a TypeScript monorepo with two packages:
 
 The following environment variables must be configured in your Cloudflare Worker:
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `SLACK_BOT_TOKEN` | Slack Bot User OAuth Token with required scopes | `xoxb-...` |
-| `SLACK_TEAM_ID` | Your Slack workspace/team ID | `T1234567890` |
-| `SLACK_LOG_CHANNEL_ID` | Channel ID for logging events | `C1234567890` |
-| `POSTMARK_API_KEY` | Postmark server API key for sending emails | `12345678-...` |
-| `RATE_LIMIT` | Maximum submissions per window per IP/email | `5` |
-| `RATE_LIMIT_WINDOW_SEC` | Rate limit window duration in seconds | `3600` |
+| Variable                | Description                                     | Example        |
+| ----------------------- | ----------------------------------------------- | -------------- |
+| `SLACK_BOT_TOKEN`       | Slack Bot User OAuth Token with required scopes | `xoxb-...`     |
+| `SLACK_TEAM_ID`         | Your Slack workspace/team ID                    | `T1234567890`  |
+| `SLACK_LOG_CHANNEL_ID`  | Channel ID for logging events                   | `C1234567890`  |
+| `POSTMARK_API_KEY`      | Postmark server API key for sending emails      | `12345678-...` |
+| `RATE_LIMIT`            | Maximum submissions per window per IP/email     | `5`            |
+| `RATE_LIMIT_WINDOW_SEC` | Rate limit window duration in seconds           | `3600`         |
 
 ### Slack Bot Permissions
 
 Your Slack bot requires these OAuth scopes:
+
 - `channels:manage` - Create channels
 - `channels:read` - Read channel information
 - `chat:write` - Send messages to log channel
@@ -45,6 +46,7 @@ Your Slack bot requires these OAuth scopes:
 ## Development Setup
 
 1. **Clone and install dependencies:**
+
    ```bash
    git clone <repository-url>
    cd conference-slack-form
@@ -54,11 +56,13 @@ Your Slack bot requires these OAuth scopes:
 2. **Start development servers:**
 
    **Option 1: View available commands**
+
    ```bash
    yarn dev
    ```
 
    **Option 2: Start services individually (recommended)**
+
    ```bash
    # Terminal 1 - Start React development server
    yarn dev:client
@@ -68,6 +72,7 @@ Your Slack bot requires these OAuth scopes:
    ```
 
 3. **Run tests:**
+
    ```bash
    yarn test           # Run tests once
    yarn test:watch     # Run tests in watch mode
@@ -95,6 +100,7 @@ Use the provided deployment script for streamlined building and deployment:
 ```
 
 The deployment script will:
+
 1. Build the React client application
 2. Copy static assets to the worker's static directory
 3. Build the Cloudflare Worker
@@ -103,6 +109,7 @@ The deployment script will:
 ### Manual Deployment
 
 1. **Build the client:**
+
    ```bash
    cd client
    yarn install
@@ -110,6 +117,7 @@ The deployment script will:
    ```
 
 2. **Copy assets to worker:**
+
    ```bash
    cd worker
    mkdir -p static
@@ -156,6 +164,7 @@ Test your deployment with the provided smoke test script:
 ```
 
 The smoke test script will verify:
+
 - ✅ API health check (`/api/ping`)
 - ✅ Error handling and validation
 - ✅ CORS configuration

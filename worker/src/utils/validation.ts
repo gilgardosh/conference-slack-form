@@ -32,22 +32,24 @@ export interface ValidationError {
  * Sanitize company name according to Slack channel naming rules
  */
 export function sanitizeCompanyName(raw: string): string {
-  return raw
-    // Convert to lowercase
-    .toLowerCase()
-    // Normalize accents to ASCII and strip combining marks
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    // Replace sequences of whitespace with single dashes
-    .replace(/\s+/g, '-')
-    // Remove any non-latin letters, numbers, and dashes (strip emojis and symbols)
-    .replace(/[^a-z0-9-]/g, '')
-    // Collapse multiple dashes
-    .replace(/-+/g, '-')
-    // Trim leading/trailing dashes
-    .replace(/^-+|-+$/g, '')
-    // Truncate to 67 characters
-    .slice(0, 67);
+  return (
+    raw
+      // Convert to lowercase
+      .toLowerCase()
+      // Normalize accents to ASCII and strip combining marks
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      // Replace sequences of whitespace with single dashes
+      .replace(/\s+/g, '-')
+      // Remove any non-latin letters, numbers, and dashes (strip emojis and symbols)
+      .replace(/[^a-z0-9-]/g, '')
+      // Collapse multiple dashes
+      .replace(/-+/g, '-')
+      // Trim leading/trailing dashes
+      .replace(/^-+|-+$/g, '')
+      // Truncate to 67 characters
+      .slice(0, 67)
+  );
 }
 
 /**
@@ -58,12 +60,12 @@ export function isFreeEmailDomain(email: string): boolean {
   if (parts.length !== 2 || !parts[0] || !parts[1]) {
     return false;
   }
-  
+
   const domain = parts[1];
-  
+
   const freeProviders = [
     'gmail.com',
-    'yahoo.com', 
+    'yahoo.com',
     'hotmail.com',
     'outlook.com',
     'aol.com',
@@ -73,53 +75,61 @@ export function isFreeEmailDomain(email: string): boolean {
     'ymail.com',
     'protonmail.com',
     'mail.com',
-    'zoho.com'
+    'zoho.com',
   ];
-  
+
   return freeProviders.includes(domain.toLowerCase());
 }
 
 /**
  * Validate and sanitize company name for preview (only requires company name)
  */
-export function validateAndSanitizePreview(input: unknown): ValidationResult | ValidationError {
+export function validateAndSanitizePreview(
+  input: unknown
+): ValidationResult | ValidationError {
   try {
     // Validate input shape with Zod
     const validatedInput = SanitizePreviewSchema.parse(input);
-    
+
     // Sanitize company name
-    const sanitizedCompanyName = sanitizeCompanyName(validatedInput.companyName);
-    
+    const sanitizedCompanyName = sanitizeCompanyName(
+      validatedInput.companyName
+    );
+
     // Check if sanitized company name is empty after processing
     if (!sanitizedCompanyName) {
       return {
         ok: false,
-        errors: ['Company name contains no valid characters after sanitization']
+        errors: [
+          'Company name contains no valid characters after sanitization',
+        ],
       };
     }
-    
+
     return {
       ok: true,
       value: {
         companyName: validatedInput.companyName,
         email: '', // Not needed for preview
-        sanitizedCompanyName
-      }
+        sanitizedCompanyName,
+      },
     };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const errors = error.errors.map(err => 
-        err.path.length > 0 ? `${err.path.join('.')}: ${err.message}` : err.message
+      const errors = error.errors.map(err =>
+        err.path.length > 0
+          ? `${err.path.join('.')}: ${err.message}`
+          : err.message
       );
       return {
         ok: false,
-        errors
+        errors,
       };
     }
-    
+
     return {
       ok: false,
-      errors: ['Validation failed with unknown error']
+      errors: ['Validation failed with unknown error'],
     };
   }
 }
@@ -127,44 +137,52 @@ export function validateAndSanitizePreview(input: unknown): ValidationResult | V
 /**
  * Validate and sanitize form submission input
  */
-export function validateAndSanitize(input: unknown): ValidationResult | ValidationError {
+export function validateAndSanitize(
+  input: unknown
+): ValidationResult | ValidationError {
   try {
     // Validate input shape with Zod
     const validatedInput = FormSubmissionSchema.parse(input);
-    
+
     // Sanitize company name
-    const sanitizedCompanyName = sanitizeCompanyName(validatedInput.companyName);
-    
+    const sanitizedCompanyName = sanitizeCompanyName(
+      validatedInput.companyName
+    );
+
     // Check if sanitized company name is empty after processing
     if (!sanitizedCompanyName) {
       return {
         ok: false,
-        errors: ['Company name contains no valid characters after sanitization']
+        errors: [
+          'Company name contains no valid characters after sanitization',
+        ],
       };
     }
-    
+
     return {
       ok: true,
       value: {
         companyName: validatedInput.companyName,
         email: validatedInput.email,
-        sanitizedCompanyName
-      }
+        sanitizedCompanyName,
+      },
     };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const errors = error.errors.map(err => 
-        err.path.length > 0 ? `${err.path.join('.')}: ${err.message}` : err.message
+      const errors = error.errors.map(err =>
+        err.path.length > 0
+          ? `${err.path.join('.')}: ${err.message}`
+          : err.message
       );
       return {
         ok: false,
-        errors
+        errors,
       };
     }
-    
+
     return {
       ok: false,
-      errors: ['Validation failed with unknown error']
+      errors: ['Validation failed with unknown error'],
     };
   }
 }

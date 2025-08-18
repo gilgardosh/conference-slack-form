@@ -14,7 +14,7 @@ const createMockFetch = () => {
 describe('SlackClient', () => {
   let slackClient: SlackClient;
   let mockFetch: ReturnType<typeof createMockFetch>;
-  
+
   const TEST_TOKEN = 'xoxb-test-token';
   const TEST_TEAM_ID = 'S1234567890';
   const TEST_USER_ID = 'U1234567890';
@@ -22,7 +22,12 @@ describe('SlackClient', () => {
 
   beforeEach(() => {
     mockFetch = createMockFetch();
-    slackClient = new SlackClient(TEST_TOKEN, TEST_TEAM_ID, TEST_LOG_CHANNEL, mockFetch);
+    slackClient = new SlackClient(
+      TEST_TOKEN,
+      TEST_TEAM_ID,
+      TEST_LOG_CHANNEL,
+      mockFetch
+    );
   });
 
   describe('createChannelName', () => {
@@ -43,15 +48,15 @@ describe('SlackClient', () => {
         ok: true,
         channel: {
           id: 'C1234567890',
-          name: 'ext-theguild-testcompany'
-        }
+          name: 'ext-theguild-testcompany',
+        },
       };
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         headers: { get: () => null },
-        json: () => Promise.resolve(mockResponse)
+        json: () => Promise.resolve(mockResponse),
       });
 
       const result = await slackClient.createChannel('testcompany');
@@ -59,7 +64,7 @@ describe('SlackClient', () => {
       expect(result).toEqual({
         ok: true,
         channelId: 'C1234567890',
-        channelName: 'ext-theguild-testcompany'
+        channelName: 'ext-theguild-testcompany',
       });
 
       expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -68,13 +73,13 @@ describe('SlackClient', () => {
         {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${TEST_TOKEN}`,
-            'Content-Type': 'application/json'
+            Authorization: `Bearer ${TEST_TOKEN}`,
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             name: 'ext-theguild-testcompany',
-            is_private: false
-          })
+            is_private: false,
+          }),
         }
       );
     });
@@ -83,7 +88,7 @@ describe('SlackClient', () => {
       // First call: name collision
       const nameCollisionResponse = {
         ok: false,
-        error: 'name_taken'
+        error: 'name_taken',
       };
 
       // Second call: success
@@ -91,8 +96,8 @@ describe('SlackClient', () => {
         ok: true,
         channel: {
           id: 'C1234567890',
-          name: 'ext-theguild-testcompany-2'
-        }
+          name: 'ext-theguild-testcompany-2',
+        },
       };
 
       mockFetch
@@ -100,13 +105,13 @@ describe('SlackClient', () => {
           ok: true,
           status: 200,
           headers: { get: () => null },
-          json: () => Promise.resolve(nameCollisionResponse)
+          json: () => Promise.resolve(nameCollisionResponse),
         })
         .mockResolvedValueOnce({
           ok: true,
           status: 200,
           headers: { get: () => null },
-          json: () => Promise.resolve(successResponse)
+          json: () => Promise.resolve(successResponse),
         });
 
       const result = await slackClient.createChannel('testcompany');
@@ -114,30 +119,32 @@ describe('SlackClient', () => {
       expect(result).toEqual({
         ok: true,
         channelId: 'C1234567890',
-        channelName: 'ext-theguild-testcompany-2'
+        channelName: 'ext-theguild-testcompany-2',
       });
 
       expect(mockFetch).toHaveBeenCalledTimes(2);
-      
+
       // First call with original name
-      expect(mockFetch).toHaveBeenNthCalledWith(1,
+      expect(mockFetch).toHaveBeenNthCalledWith(
+        1,
         'https://slack.com/api/conversations.create',
         expect.objectContaining({
           body: JSON.stringify({
             name: 'ext-theguild-testcompany',
-            is_private: false
-          })
+            is_private: false,
+          }),
         })
       );
 
       // Second call with incremented name
-      expect(mockFetch).toHaveBeenNthCalledWith(2,
+      expect(mockFetch).toHaveBeenNthCalledWith(
+        2,
         'https://slack.com/api/conversations.create',
         expect.objectContaining({
           body: JSON.stringify({
             name: 'ext-theguild-testcompany-2',
-            is_private: false
-          })
+            is_private: false,
+          }),
         })
       );
     });
@@ -145,7 +152,7 @@ describe('SlackClient', () => {
     it('should fail after maximum attempts due to name collisions', async () => {
       const nameCollisionResponse = {
         ok: false,
-        error: 'name_taken'
+        error: 'name_taken',
       };
 
       // Mock 10 consecutive name collisions
@@ -154,7 +161,7 @@ describe('SlackClient', () => {
           ok: true,
           status: 200,
           headers: { get: () => null },
-          json: () => Promise.resolve(nameCollisionResponse)
+          json: () => Promise.resolve(nameCollisionResponse),
         });
       }
 
@@ -163,7 +170,8 @@ describe('SlackClient', () => {
       expect(result).toEqual({
         ok: false,
         error: 'max_attempts_exceeded',
-        details: 'Failed to create channel after 10 attempts due to name collisions'
+        details:
+          'Failed to create channel after 10 attempts due to name collisions',
       });
 
       expect(mockFetch).toHaveBeenCalledTimes(10);
@@ -173,8 +181,10 @@ describe('SlackClient', () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 429,
-        headers: { get: (name: string) => name === 'Retry-After' ? '120' : null },
-        json: () => Promise.resolve({})
+        headers: {
+          get: (name: string) => (name === 'Retry-After' ? '120' : null),
+        },
+        json: () => Promise.resolve({}),
       });
 
       const result = await slackClient.createChannel('testcompany');
@@ -183,21 +193,21 @@ describe('SlackClient', () => {
         ok: false,
         error: 'rate_limited',
         details: 'Slack API rate limit exceeded',
-        retryAfter: 120
+        retryAfter: 120,
       });
     });
 
     it('should handle other Slack API errors immediately', async () => {
       const errorResponse = {
         ok: false,
-        error: 'invalid_auth'
+        error: 'invalid_auth',
       };
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         headers: { get: () => null },
-        json: () => Promise.resolve(errorResponse)
+        json: () => Promise.resolve(errorResponse),
       });
 
       const result = await slackClient.createChannel('testcompany');
@@ -205,7 +215,7 @@ describe('SlackClient', () => {
       expect(result).toEqual({
         ok: false,
         error: 'invalid_auth',
-        details: 'Slack API returned an error'
+        details: 'Slack API returned an error',
       });
 
       expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -215,22 +225,24 @@ describe('SlackClient', () => {
   describe('inviteGroup', () => {
     it('should invite group successfully', async () => {
       const mockResponse = {
-        ok: true
+        ok: true,
       };
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         headers: { get: () => null },
-        json: () => Promise.resolve(mockResponse)
+        json: () => Promise.resolve(mockResponse),
       });
 
-      const result = await slackClient.inviteGroup('C1234567890', ['U1234567890']);
+      const result = await slackClient.inviteGroup('C1234567890', [
+        'U1234567890',
+      ]);
 
       expect(result).toEqual({
         ok: true,
         invited: true,
-        details: 'Guild group invited to channel'
+        details: 'Guild group invited to channel',
       });
 
       expect(mockFetch).toHaveBeenCalledWith(
@@ -238,13 +250,13 @@ describe('SlackClient', () => {
         {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${TEST_TOKEN}`,
-            'Content-Type': 'application/json'
+            Authorization: `Bearer ${TEST_TOKEN}`,
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             channel: 'C1234567890',
-            users: TEST_USER_ID
-          })
+            users: TEST_USER_ID,
+          }),
         }
       );
     });
@@ -252,22 +264,24 @@ describe('SlackClient', () => {
     it('should handle invite failures', async () => {
       const errorResponse = {
         ok: false,
-        error: 'channel_not_found'
+        error: 'channel_not_found',
       };
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         headers: { get: () => null },
-        json: () => Promise.resolve(errorResponse)
+        json: () => Promise.resolve(errorResponse),
       });
 
-      const result = await slackClient.inviteGroup('C1234567890', ['U1234567890']);
+      const result = await slackClient.inviteGroup('C1234567890', [
+        'U1234567890',
+      ]);
 
       expect(result).toEqual({
         ok: false,
         error: 'channel_not_found',
-        details: 'Slack API returned an error'
+        details: 'Slack API returned an error',
       });
     });
   });
@@ -295,7 +309,8 @@ describe('SlackClient', () => {
       expect(result).toEqual({
         ok: true,
         invited: true,
-        details: 'Guest invite sent to test@example.com for channel C1234567890',
+        details:
+          'Guest invite sent to test@example.com for channel C1234567890',
       });
 
       expect(mockFetch).toHaveBeenCalledWith(
@@ -317,22 +332,25 @@ describe('SlackClient', () => {
     it('should handle guest invite failures', async () => {
       const errorResponse = {
         ok: false,
-        error: 'email_already_exists'
+        error: 'email_already_exists',
       };
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         headers: { get: () => null },
-        json: () => Promise.resolve(errorResponse)
+        json: () => Promise.resolve(errorResponse),
       });
 
-      const result = await slackClient.inviteGuest('test@example.com', 'C1234567890');
+      const result = await slackClient.inviteGuest(
+        'test@example.com',
+        'C1234567890'
+      );
 
       expect(result).toEqual({
         ok: false,
         error: 'email_already_exists',
-        details: 'Slack API returned an error'
+        details: 'Slack API returned an error',
       });
     });
   });
@@ -341,21 +359,21 @@ describe('SlackClient', () => {
     it('should log info message successfully', async () => {
       const mockResponse = {
         ok: true,
-        ts: '1234567890.123456'
+        ts: '1234567890.123456',
       };
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         headers: { get: () => null },
-        json: () => Promise.resolve(mockResponse)
+        json: () => Promise.resolve(mockResponse),
       });
 
       const result = await slackClient.logToChannel('Test message', 'info');
 
       expect(result).toEqual({
         ok: true,
-        timestamp: '1234567890.123456'
+        timestamp: '1234567890.123456',
       });
 
       expect(mockFetch).toHaveBeenCalledWith(
@@ -363,15 +381,15 @@ describe('SlackClient', () => {
         {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${TEST_TOKEN}`,
-            'Content-Type': 'application/json'
+            Authorization: `Bearer ${TEST_TOKEN}`,
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             channel: TEST_LOG_CHANNEL,
             text: ':information_source: *[INFO]* Test message',
             unfurl_links: false,
-            unfurl_media: false
-          })
+            unfurl_media: false,
+          }),
         }
       );
     });
@@ -379,14 +397,14 @@ describe('SlackClient', () => {
     it('should format warning messages correctly', async () => {
       const mockResponse = {
         ok: true,
-        ts: '1234567890.123456'
+        ts: '1234567890.123456',
       };
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         headers: { get: () => null },
-        json: () => Promise.resolve(mockResponse)
+        json: () => Promise.resolve(mockResponse),
       });
 
       await slackClient.logToChannel('Test warning', 'warn');
@@ -398,8 +416,8 @@ describe('SlackClient', () => {
             channel: TEST_LOG_CHANNEL,
             text: ':warning: *[WARN]* Test warning',
             unfurl_links: false,
-            unfurl_media: false
-          })
+            unfurl_media: false,
+          }),
         })
       );
     });
@@ -407,14 +425,14 @@ describe('SlackClient', () => {
     it('should format error messages correctly', async () => {
       const mockResponse = {
         ok: true,
-        ts: '1234567890.123456'
+        ts: '1234567890.123456',
       };
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         headers: { get: () => null },
-        json: () => Promise.resolve(mockResponse)
+        json: () => Promise.resolve(mockResponse),
       });
 
       await slackClient.logToChannel('Test error', 'error');
@@ -426,8 +444,8 @@ describe('SlackClient', () => {
             channel: TEST_LOG_CHANNEL,
             text: ':exclamation: *[ERROR]* Test error',
             unfurl_links: false,
-            unfurl_media: false
-          })
+            unfurl_media: false,
+          }),
         })
       );
     });
@@ -435,14 +453,14 @@ describe('SlackClient', () => {
     it('should handle log failures', async () => {
       const errorResponse = {
         ok: false,
-        error: 'channel_not_found'
+        error: 'channel_not_found',
       };
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         headers: { get: () => null },
-        json: () => Promise.resolve(errorResponse)
+        json: () => Promise.resolve(errorResponse),
       });
 
       const result = await slackClient.logToChannel('Test message');
@@ -450,7 +468,7 @@ describe('SlackClient', () => {
       expect(result).toEqual({
         ok: false,
         error: 'channel_not_found',
-        details: 'Slack API returned an error'
+        details: 'Slack API returned an error',
       });
     });
   });
@@ -464,7 +482,7 @@ describe('SlackClient', () => {
       expect(result).toEqual({
         ok: false,
         error: 'network_error',
-        details: 'Network error'
+        details: 'Network error',
       });
     });
 
@@ -473,7 +491,7 @@ describe('SlackClient', () => {
         ok: false,
         status: 500,
         statusText: 'Internal Server Error',
-        headers: { get: () => null }
+        headers: { get: () => null },
       });
 
       const result = await slackClient.createChannel('testcompany');
@@ -481,20 +499,29 @@ describe('SlackClient', () => {
       expect(result).toEqual({
         ok: false,
         error: 'http_error',
-        details: 'HTTP 500: Internal Server Error'
+        details: 'HTTP 500: Internal Server Error',
       });
     });
   });
 
   describe('createSlackClient factory', () => {
     it('should create client instance with correct parameters', () => {
-      const client = createSlackClient(TEST_TOKEN, TEST_TEAM_ID, TEST_LOG_CHANNEL);
+      const client = createSlackClient(
+        TEST_TOKEN,
+        TEST_TEAM_ID,
+        TEST_LOG_CHANNEL
+      );
       expect(client).toBeInstanceOf(SlackClient);
     });
 
     it('should create client instance with custom fetch function', () => {
       const customFetch = vi.fn();
-      const client = createSlackClient(TEST_TOKEN, TEST_TEAM_ID, TEST_LOG_CHANNEL, customFetch);
+      const client = createSlackClient(
+        TEST_TOKEN,
+        TEST_TEAM_ID,
+        TEST_LOG_CHANNEL,
+        customFetch
+      );
       expect(client).toBeInstanceOf(SlackClient);
     });
   });

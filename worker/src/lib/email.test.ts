@@ -3,12 +3,16 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { EmailClient, sendWelcomeEmail, type WelcomeEmailParams } from './email';
+import {
+  EmailClient,
+  sendWelcomeEmail,
+  type WelcomeEmailParams,
+} from './email';
 
 describe('EmailClient', () => {
   let mockFetch: ReturnType<typeof vi.fn>;
   let emailClient: EmailClient;
-  
+
   const mockParams: WelcomeEmailParams = {
     companyName: 'Test Company',
     email: 'test@example.com',
@@ -34,13 +38,13 @@ describe('EmailClient', () => {
         }),
         text: vi.fn(),
       };
-      
+
       mockFetch.mockResolvedValue(mockResponse);
 
       const result = await emailClient.sendWelcomeEmail(mockParams);
 
       expect(result).toEqual({ ok: true });
-      
+
       // Verify API call was made correctly
       expect(mockFetch).toHaveBeenCalledTimes(1);
       expect(mockFetch).toHaveBeenCalledWith(
@@ -48,7 +52,7 @@ describe('EmailClient', () => {
         expect.objectContaining({
           method: 'POST',
           headers: {
-            'Accept': 'application/json',
+            Accept: 'application/json',
             'Content-Type': 'application/json',
             'X-Postmark-Server-Token': 'test-api-key',
           },
@@ -58,12 +62,18 @@ describe('EmailClient', () => {
 
       // Verify the request body contains expected content
       const callArgs = mockFetch.mock.calls[0];
-      if (callArgs && callArgs[1] && typeof callArgs[1] === 'object' && 'body' in callArgs[1]) {
+      if (
+        callArgs &&
+        callArgs[1] &&
+        typeof callArgs[1] === 'object' &&
+        'body' in callArgs[1]
+      ) {
         const requestBody = JSON.parse(callArgs[1].body as string);
         expect(requestBody).toMatchObject({
           From: 'noreply@theguild.dev',
           To: 'test@example.com',
-          Subject: 'Welcome to The Guild Conference - Your channel #ext-theguild-test-company is ready!',
+          Subject:
+            'Welcome to The Guild Conference - Your channel #ext-theguild-test-company is ready!',
           MessageStream: 'outbound',
           Tag: 'conference-welcome',
           Metadata: {
@@ -75,7 +85,9 @@ describe('EmailClient', () => {
         // Verify HTML and text bodies are included
         expect(requestBody.HtmlBody).toContain('Test Company');
         expect(requestBody.HtmlBody).toContain('ext-theguild-test-company');
-        expect(requestBody.HtmlBody).toContain('https://theguild.slack.com/channels/C1234567890');
+        expect(requestBody.HtmlBody).toContain(
+          'https://theguild.slack.com/channels/C1234567890'
+        );
         expect(requestBody.TextBody).toContain('Test Company');
         expect(requestBody.TextBody).toContain('ext-theguild-test-company');
       }
@@ -91,16 +103,21 @@ describe('EmailClient', () => {
           ErrorCode: 300,
           Message: 'Invalid email address',
         }),
-        text: vi.fn().mockResolvedValue('{"ErrorCode":300,"Message":"Invalid email address"}'),
+        text: vi
+          .fn()
+          .mockResolvedValue(
+            '{"ErrorCode":300,"Message":"Invalid email address"}'
+          ),
       };
-      
+
       mockFetch.mockResolvedValue(mockResponse);
 
       const result = await emailClient.sendWelcomeEmail(mockParams);
 
       expect(result).toEqual({
         ok: false,
-        error: 'Postmark API error: HTTP 422: Unprocessable Entity - Invalid email address',
+        error:
+          'Postmark API error: HTTP 422: Unprocessable Entity - Invalid email address',
       });
     });
 
@@ -113,14 +130,15 @@ describe('EmailClient', () => {
         json: vi.fn(),
         text: vi.fn().mockResolvedValue('Internal server error occurred'),
       };
-      
+
       mockFetch.mockResolvedValue(mockResponse);
 
       const result = await emailClient.sendWelcomeEmail(mockParams);
 
       expect(result).toEqual({
         ok: false,
-        error: 'Postmark API error: HTTP 500: Internal Server Error - Internal server error occurred',
+        error:
+          'Postmark API error: HTTP 500: Internal Server Error - Internal server error occurred',
       });
     });
 
@@ -136,7 +154,7 @@ describe('EmailClient', () => {
         }),
         text: vi.fn(),
       };
-      
+
       mockFetch.mockResolvedValue(mockResponse);
 
       const result = await emailClient.sendWelcomeEmail(mockParams);
@@ -187,19 +205,26 @@ describe('EmailClient', () => {
         }),
         text: vi.fn(),
       };
-      
+
       mockFetch.mockResolvedValue(mockResponse);
 
       await emailClient.sendWelcomeEmail(paramsWithHtml);
 
       const callArgs = mockFetch.mock.calls[0];
-      if (callArgs && callArgs[1] && typeof callArgs[1] === 'object' && 'body' in callArgs[1]) {
+      if (
+        callArgs &&
+        callArgs[1] &&
+        typeof callArgs[1] === 'object' &&
+        'body' in callArgs[1]
+      ) {
         const requestBody = JSON.parse(callArgs[1].body as string);
-        
+
         // Verify HTML is properly escaped
-        expect(requestBody.HtmlBody).toContain('Test &amp; &quot;Company&quot; &lt;script&gt;');
+        expect(requestBody.HtmlBody).toContain(
+          'Test &amp; &quot;Company&quot; &lt;script&gt;'
+        );
         expect(requestBody.HtmlBody).not.toContain('<script>');
-        
+
         // Text body should contain original unescaped content
         expect(requestBody.TextBody).toContain('Test & "Company" <script>');
       }
@@ -214,18 +239,27 @@ describe('EmailClient', () => {
         }),
         text: vi.fn(),
       };
-      
+
       mockFetch.mockResolvedValue(mockResponse);
 
       await emailClient.sendWelcomeEmail(mockParams);
 
       const callArgs = mockFetch.mock.calls[0];
-      if (callArgs && callArgs[1] && typeof callArgs[1] === 'object' && 'body' in callArgs[1]) {
+      if (
+        callArgs &&
+        callArgs[1] &&
+        typeof callArgs[1] === 'object' &&
+        'body' in callArgs[1]
+      ) {
         const requestBody = JSON.parse(callArgs[1].body as string);
-        
+
         // Verify channel URL is included in both HTML and text
-        expect(requestBody.HtmlBody).toContain('https://theguild.slack.com/channels/C1234567890');
-        expect(requestBody.TextBody).toContain('https://theguild.slack.com/channels/C1234567890');
+        expect(requestBody.HtmlBody).toContain(
+          'https://theguild.slack.com/channels/C1234567890'
+        );
+        expect(requestBody.TextBody).toContain(
+          'https://theguild.slack.com/channels/C1234567890'
+        );
       }
     });
   });
@@ -233,10 +267,10 @@ describe('EmailClient', () => {
   describe('HTML escaping', () => {
     it('should escape all HTML special characters', () => {
       const client = new EmailClient('test-key');
-      
+
       // Access private method via any cast for testing
       const escapeHtml = (client as any).escapeHtml.bind(client);
-      
+
       expect(escapeHtml('&')).toBe('&amp;');
       expect(escapeHtml('<')).toBe('&lt;');
       expect(escapeHtml('>')).toBe('&gt;');
@@ -249,10 +283,12 @@ describe('EmailClient', () => {
   describe('Email sanitization for logging', () => {
     it('should sanitize email addresses correctly', () => {
       const client = new EmailClient('test-key');
-      
+
       // Access private method via any cast for testing
-      const sanitizeEmail = (client as any).sanitizeEmailForLogging.bind(client);
-      
+      const sanitizeEmail = (client as any).sanitizeEmailForLogging.bind(
+        client
+      );
+
       expect(sanitizeEmail('test@example.com')).toBe('te***@example.com');
       expect(sanitizeEmail('a@example.com')).toBe('a***@example.com');
       expect(sanitizeEmail('ab@example.com')).toBe('ab***@example.com');
@@ -265,7 +301,7 @@ describe('EmailClient', () => {
 
 describe('sendWelcomeEmail function', () => {
   let mockFetch: ReturnType<typeof vi.fn>;
-  
+
   const mockParams: WelcomeEmailParams = {
     companyName: 'Test Company',
     email: 'test@example.com',
@@ -278,7 +314,11 @@ describe('sendWelcomeEmail function', () => {
   });
 
   it('should return error when API key is missing', async () => {
-    const result = await sendWelcomeEmail(mockParams, undefined, mockFetch as any);
+    const result = await sendWelcomeEmail(
+      mockParams,
+      undefined,
+      mockFetch as any
+    );
 
     expect(result).toEqual({
       ok: false,
@@ -297,10 +337,14 @@ describe('sendWelcomeEmail function', () => {
       }),
       text: vi.fn(),
     };
-    
+
     mockFetch.mockResolvedValue(mockResponse);
 
-    const result = await sendWelcomeEmail(mockParams, 'test-api-key', mockFetch as any);
+    const result = await sendWelcomeEmail(
+      mockParams,
+      'test-api-key',
+      mockFetch as any
+    );
 
     expect(result).toEqual({ ok: true });
     expect(mockFetch).toHaveBeenCalledTimes(1);

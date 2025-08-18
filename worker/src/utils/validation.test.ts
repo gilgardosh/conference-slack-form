@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { 
-  sanitizeCompanyName, 
-  isFreeEmailDomain, 
+import {
+  sanitizeCompanyName,
+  isFreeEmailDomain,
   validateAndSanitize,
-  validateAndSanitizePreview
+  validateAndSanitizePreview,
 } from './validation';
 
 describe('sanitizeCompanyName', () => {
@@ -41,14 +41,19 @@ describe('sanitizeCompanyName', () => {
   it('truncates to 67 characters', () => {
     const longName = 'a'.repeat(100);
     expect(sanitizeCompanyName(longName)).toBe('a'.repeat(67));
-    
-    const longNameWithDashes = 'very-long-company-name-that-exceeds-sixty-seven-characters-limit-test';
+
+    const longNameWithDashes =
+      'very-long-company-name-that-exceeds-sixty-seven-characters-limit-test';
     expect(sanitizeCompanyName(longNameWithDashes).length).toBe(67);
   });
 
   it('handles complex cases', () => {
-    expect(sanitizeCompanyName('  Café 🚀 & Associates Inc.  ')).toBe('cafe-associates-inc');
-    expect(sanitizeCompanyName('Zürich (Naïve) Corp★')).toBe('zurich-naive-corp');
+    expect(sanitizeCompanyName('  Café 🚀 & Associates Inc.  ')).toBe(
+      'cafe-associates-inc'
+    );
+    expect(sanitizeCompanyName('Zürich (Naïve) Corp★')).toBe(
+      'zurich-naive-corp'
+    );
   });
 
   it('returns empty string for input with no valid characters', () => {
@@ -92,11 +97,11 @@ describe('validateAndSanitize', () => {
   it('validates and sanitizes valid input', () => {
     const input = {
       companyName: 'Café Corp',
-      email: 'user@example.com'
+      email: 'user@example.com',
     };
 
     const result = validateAndSanitize(input);
-    
+
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.value.companyName).toBe('Café Corp');
@@ -108,11 +113,11 @@ describe('validateAndSanitize', () => {
   it('validates complex company name sanitization', () => {
     const input = {
       companyName: 'Café 🚀!',
-      email: 'user@example.com'
+      email: 'user@example.com',
     };
 
     const result = validateAndSanitize(input);
-    
+
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.value.sanitizedCompanyName).toBe('cafe');
@@ -121,11 +126,11 @@ describe('validateAndSanitize', () => {
 
   it('returns errors for missing company name', () => {
     const input = {
-      email: 'user@example.com'
+      email: 'user@example.com',
     };
 
     const result = validateAndSanitize(input);
-    
+
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.errors).toContain('companyName: Required');
@@ -135,24 +140,26 @@ describe('validateAndSanitize', () => {
   it('returns errors for empty company name', () => {
     const input = {
       companyName: '',
-      email: 'user@example.com'
+      email: 'user@example.com',
     };
 
     const result = validateAndSanitize(input);
-    
+
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.errors.some(error => error.includes('Company name is required'))).toBe(true);
+      expect(
+        result.errors.some(error => error.includes('Company name is required'))
+      ).toBe(true);
     }
   });
 
   it('returns errors for missing email', () => {
     const input = {
-      companyName: 'ACME Corp'
+      companyName: 'ACME Corp',
     };
 
     const result = validateAndSanitize(input);
-    
+
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.errors).toContain('email: Required');
@@ -162,39 +169,43 @@ describe('validateAndSanitize', () => {
   it('returns errors for invalid email format', () => {
     const input = {
       companyName: 'ACME Corp',
-      email: 'invalid-email'
+      email: 'invalid-email',
     };
 
     const result = validateAndSanitize(input);
-    
+
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.errors.some(error => error.includes('Invalid email format'))).toBe(true);
+      expect(
+        result.errors.some(error => error.includes('Invalid email format'))
+      ).toBe(true);
     }
   });
 
   it('returns errors for company name with no valid characters', () => {
     const input = {
       companyName: '🚀🌟✨',
-      email: 'user@example.com'
+      email: 'user@example.com',
     };
 
     const result = validateAndSanitize(input);
-    
+
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.errors).toContain('Company name contains no valid characters after sanitization');
+      expect(result.errors).toContain(
+        'Company name contains no valid characters after sanitization'
+      );
     }
   });
 
   it('handles multiple validation errors', () => {
     const input = {
       companyName: '',
-      email: 'invalid-email'
+      email: 'invalid-email',
     };
 
     const result = validateAndSanitize(input);
-    
+
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.errors.length).toBeGreaterThan(1);
@@ -203,7 +214,7 @@ describe('validateAndSanitize', () => {
 
   it('handles non-object input', () => {
     const result = validateAndSanitize('invalid');
-    
+
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.errors.length).toBeGreaterThan(0);
@@ -212,7 +223,7 @@ describe('validateAndSanitize', () => {
 
   it('handles null input', () => {
     const result = validateAndSanitize(null);
-    
+
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.errors.length).toBeGreaterThan(0);
@@ -225,9 +236,9 @@ describe('validateAndSanitizePreview', () => {
     const input = {
       companyName: 'ACME Corp',
     };
-    
+
     const result = validateAndSanitizePreview(input);
-    
+
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.value.companyName).toBe('ACME Corp');
@@ -240,9 +251,9 @@ describe('validateAndSanitizePreview', () => {
     const input = {
       email: 'test@example.com',
     };
-    
+
     const result = validateAndSanitizePreview(input);
-    
+
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.errors).toContain('companyName: Required');
@@ -253,9 +264,9 @@ describe('validateAndSanitizePreview', () => {
     const input = {
       companyName: '',
     };
-    
+
     const result = validateAndSanitizePreview(input);
-    
+
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.errors).toContain('companyName: Company name is required');
@@ -266,12 +277,14 @@ describe('validateAndSanitizePreview', () => {
     const input = {
       companyName: '🎉🎊!!!',
     };
-    
+
     const result = validateAndSanitizePreview(input);
-    
+
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.errors).toContain('Company name contains no valid characters after sanitization');
+      expect(result.errors).toContain(
+        'Company name contains no valid characters after sanitization'
+      );
     }
   });
 
@@ -279,9 +292,9 @@ describe('validateAndSanitizePreview', () => {
     const input = {
       companyName: '  Café 🚀 & Associates Inc.  ',
     };
-    
+
     const result = validateAndSanitizePreview(input);
-    
+
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.value.companyName).toBe('  Café 🚀 & Associates Inc.  ');

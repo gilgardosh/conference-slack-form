@@ -42,7 +42,7 @@ describe('Email and Slack Integration', () => {
     // Mock fetch to return different responses based on URL
     mockFetch
       .mockResolvedValueOnce(slackChannelResponse) // Slack API call
-      .mockResolvedValueOnce(postmarkResponse);   // Postmark API call
+      .mockResolvedValueOnce(postmarkResponse); // Postmark API call
 
     // Create Slack client
     const slackClient = createSlackClient(
@@ -54,7 +54,7 @@ describe('Email and Slack Integration', () => {
 
     // Step 1: Create Slack channel
     const channelResult = await slackClient.createChannel('test-company');
-    
+
     expect(channelResult).toEqual({
       ok: true,
       channelId: 'C1234567890',
@@ -81,20 +81,22 @@ describe('Email and Slack Integration', () => {
 
     // Verify both API calls were made
     expect(mockFetch).toHaveBeenCalledTimes(2);
-    
+
     // Verify Slack API call
-    expect(mockFetch).toHaveBeenNthCalledWith(1,
+    expect(mockFetch).toHaveBeenNthCalledWith(
+      1,
       'https://slack.com/api/conversations.create',
       expect.objectContaining({
         method: 'POST',
         headers: expect.objectContaining({
-          'Authorization': 'Bearer test-slack-token',
+          Authorization: 'Bearer test-slack-token',
         }),
       })
     );
 
     // Verify Postmark API call
-    expect(mockFetch).toHaveBeenNthCalledWith(2,
+    expect(mockFetch).toHaveBeenNthCalledWith(
+      2,
       'https://api.postmarkapp.com/email',
       expect.objectContaining({
         method: 'POST',
@@ -125,12 +127,16 @@ describe('Email and Slack Integration', () => {
         ErrorCode: 300,
         Message: 'Invalid email address',
       }),
-      text: vi.fn().mockResolvedValue('{"ErrorCode":300,"Message":"Invalid email address"}'),
+      text: vi
+        .fn()
+        .mockResolvedValue(
+          '{"ErrorCode":300,"Message":"Invalid email address"}'
+        ),
     };
 
     mockFetch
       .mockResolvedValueOnce(postmarkErrorResponse) // Postmark fails
-      .mockResolvedValueOnce(slackLogResponse);     // Slack logging succeeds
+      .mockResolvedValueOnce(slackLogResponse); // Slack logging succeeds
 
     // Try to send email
     const emailParams: WelcomeEmailParams = {
@@ -178,13 +184,16 @@ describe('Email and Slack Integration', () => {
     function sanitizeEmailForLogging(email: string): string {
       const [localPart, domain] = email.split('@');
       if (!domain || !localPart) return '[invalid-email]';
-      
-      const prefix = localPart.length >= 2 ? localPart.substring(0, 2) : localPart;
+
+      const prefix =
+        localPart.length >= 2 ? localPart.substring(0, 2) : localPart;
       return `${prefix}***@${domain}`;
     }
 
     // Test email sanitization
-    expect(sanitizeEmailForLogging('john.doe@example.com')).toBe('jo***@example.com');
+    expect(sanitizeEmailForLogging('john.doe@example.com')).toBe(
+      'jo***@example.com'
+    );
     expect(sanitizeEmailForLogging('a@test.com')).toBe('a***@test.com');
     expect(sanitizeEmailForLogging('invalid-email')).toBe('[invalid-email]');
 
@@ -192,8 +201,10 @@ describe('Email and Slack Integration', () => {
     const email = 'user@company.com';
     const sanitizedEmail = sanitizeEmailForLogging(email);
     const logMessage = `Welcome email sent to ${sanitizedEmail} for channel #ext-theguild-company`;
-    
-    expect(logMessage).toBe('Welcome email sent to us***@company.com for channel #ext-theguild-company');
+
+    expect(logMessage).toBe(
+      'Welcome email sent to us***@company.com for channel #ext-theguild-company'
+    );
     expect(logMessage).not.toContain('user@company.com'); // Original email not in logs
   });
 });

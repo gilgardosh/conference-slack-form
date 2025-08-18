@@ -6,7 +6,10 @@ import type { FormData } from './types';
 import { submitSubmission } from './lib/api';
 
 function App() {
-  const [formData, setFormData] = useState<FormData>({ companyName: '', email: '' });
+  const [formData, setFormData] = useState<FormData>({
+    companyName: '',
+    email: '',
+  });
   const [showModal, setShowModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string>('');
@@ -28,7 +31,7 @@ function App() {
         companyName: formData.companyName,
         email: formData.email,
       });
-      
+
       if (response.ok) {
         setSubmitSuccess(true);
         setShouldResetForm(true);
@@ -42,18 +45,26 @@ function App() {
         if (response.rateLimitInfo) {
           // Rate limit error (429)
           const { type, remaining } = response.rateLimitInfo;
-          setSubmitError(`${response.error} (${type} rate limit, ${remaining} remaining)`);
-        } else if (response.error === 'Submission failed — we\'re looking into it') {
+          setSubmitError(
+            `${response.error} (${type} rate limit, ${remaining} remaining)`
+          );
+        } else if (
+          response.error === "Submission failed — we're looking into it"
+        ) {
           // Slack error (502) - log to console for debugging
           console.error('Slack integration error:', response.error);
           setSubmitError(response.error);
         } else {
           // Other errors
-          setSubmitError(response.error || 'Submission failed. Please try again.');
+          setSubmitError(
+            response.error || 'Submission failed. Please try again.'
+          );
         }
       }
     } catch {
-      setSubmitError('Network error. Please check your connection and try again.');
+      setSubmitError(
+        'Network error. Please check your connection and try again.'
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -70,23 +81,32 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+    <div className='min-h-screen bg-white dark:bg-gray-900 transition-colors'>
+      <div className='container mx-auto px-4 py-8'>
+        <div className='flex justify-between items-center mb-8'>
+          <h1 className='text-3xl font-bold text-gray-900 dark:text-white'>
             Conference Slack Form
           </h1>
           <DarkModeToggle />
         </div>
 
-        <div className="max-w-md mx-auto">
-          <div className="flex justify-center mb-6">
-            <img src="/full-dark-logo.svg" alt="Company Logo" className="h-20 block dark:hidden" />
-            <img src="/full-white-logo.svg" alt="Company Logo" className="h-20 hidden dark:block" />
+        <div className='max-w-md mx-auto'>
+          <div className='flex justify-center mb-6'>
+            <img
+              src='/full-dark-logo.svg'
+              alt='Company Logo'
+              className='h-20 block dark:hidden'
+            />
+            <img
+              src='/full-white-logo.svg'
+              alt='Company Logo'
+              className='h-20 hidden dark:block'
+            />
           </div>
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg shadow-lg p-6">
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
-              Join our conference Slack workspace. We&apos;ll create a dedicated channel for your company.
+          <div className='bg-gray-50 dark:bg-gray-800 rounded-lg shadow-lg p-6'>
+            <p className='text-gray-600 dark:text-gray-300 mb-6'>
+              Join our conference Slack workspace. We&apos;ll create a dedicated
+              channel for your company.
             </p>
 
             <Form
@@ -97,15 +117,18 @@ function App() {
             />
 
             {submitError && (
-              <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/50 border border-red-200 dark:border-red-800 rounded-md">
-                <p className="text-sm text-red-600 dark:text-red-400">{submitError}</p>
+              <div className='mt-4 p-3 bg-red-50 dark:bg-red-900/50 border border-red-200 dark:border-red-800 rounded-md'>
+                <p className='text-sm text-red-600 dark:text-red-400'>
+                  {submitError}
+                </p>
               </div>
             )}
 
             {submitSuccess && (
-              <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/50 border border-green-200 dark:border-green-800 rounded-md">
-                <p className="text-sm text-green-600 dark:text-green-400">
-                  ✅ Successfully submitted! Check your email for further instructions.
+              <div className='mt-4 p-3 bg-green-50 dark:bg-green-900/50 border border-green-200 dark:border-green-800 rounded-md'>
+                <p className='text-sm text-green-600 dark:text-green-400'>
+                  ✅ Successfully submitted! Check your email for further
+                  instructions.
                 </p>
               </div>
             )}

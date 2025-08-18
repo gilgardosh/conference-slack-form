@@ -20,7 +20,10 @@ describe('sanitizePreview', () => {
       json: () => Promise.resolve(mockResponse),
     });
 
-    const formData = { companyName: 'Test Company!', email: 'test@example.com' };
+    const formData = {
+      companyName: 'Test Company!',
+      email: 'test@example.com',
+    };
     const result = await sanitizePreview(formData);
 
     expect(mockFetch).toHaveBeenCalledWith(
@@ -41,7 +44,7 @@ describe('sanitizePreview', () => {
     mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
     const formData = { companyName: 'Test Company', email: 'test@example.com' };
-    
+
     await expect(sanitizePreview(formData)).rejects.toThrow('Network error');
   });
 });

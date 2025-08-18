@@ -37,6 +37,7 @@ nano worker/.env
 ```
 
 Replace with your actual values:
+
 ```
 # Slack Bot User OAuth Token (get from Slack App settings)
 SLACK_BOT_TOKEN=xoxb-your-actual-bot-token-here
@@ -63,11 +64,13 @@ cp client/.env.example client/.env.local
 ```
 
 Edit `client/.env.local`:
+
 ```bash
 nano client/.env.local
 ```
 
 Replace with your worker URL (you'll get this after deployment):
+
 ```
 VITE_API_BASE_URL=https://your-worker-name.your-subdomain.workers.dev
 ```
@@ -83,6 +86,7 @@ yarn run build
 ```
 
 Expected output:
+
 ```
 ✅ Test Files  15 passed (15)
 ✅ Tests  157 passed (157)
@@ -113,11 +117,13 @@ cp wrangler.example.toml wrangler.toml
 ```
 
 Edit `wrangler.toml`:
+
 ```bash
 nano wrangler.toml
 ```
 
 Update the name and account details:
+
 ```toml
 name = "conference-slack-form"  # Change this to your preferred name
 main = "src/index.ts"
@@ -180,6 +186,7 @@ nano client/.env.local
 ```
 
 Replace the URL with your actual worker URL:
+
 ```
 VITE_API_BASE_URL=https://conference-slack-form.your-subdomain.workers.dev
 ```
@@ -207,6 +214,7 @@ cd ..
 ```
 
 Expected output:
+
 ```
 ✅ Health check passed
 ✅ Sanitize preview works
@@ -233,6 +241,7 @@ Expected output:
 ### Common Issues
 
 1. **"Invalid token" error**:
+
    ```bash
    # Check your Slack token
    wrangler secret list
@@ -248,6 +257,7 @@ Expected output:
      - `users:read.email`
 
 3. **Email not sending**:
+
    ```bash
    # Check Postmark API key
    wrangler secret put POSTMARK_API_KEY
@@ -263,6 +273,7 @@ Expected output:
 ### Getting Help
 
 1. **Check logs**:
+
    ```bash
    wrangler tail
    ```
@@ -274,10 +285,11 @@ Expected output:
    - Check metrics and logs
 
 3. **Test individual endpoints**:
+
    ```bash
    # Test health check
    curl https://your-worker-url.workers.dev/api/ping
-   
+
    # Expected: {"ok":true,"version":"0.1.0"}
    ```
 
@@ -305,6 +317,7 @@ To monitor usage:
 ### 3. Security Settings
 
 1. **Rate Limiting**: Adjust if needed:
+
    ```bash
    wrangler secret put RATE_LIMIT   # Default: 10
    wrangler secret put RATE_LIMIT_WINDOW_SEC  # Default: 3600
@@ -329,6 +342,7 @@ To monitor usage:
 ### Backup
 
 Important files to backup:
+
 - `worker/.env` (contains your configuration)
 - `wrangler.toml` (deployment configuration)
 - `client/.env.local` (client configuration)

@@ -180,16 +180,19 @@ This email was sent to you because you registered for The Guild Conference.`;
   private sanitizeEmailForLogging(email: string): string {
     const [localPart, domain] = email.split('@');
     if (!domain || !localPart) return '[invalid-email]';
-    
+
     // Show first 2 characters of local part + *** + domain
-    const prefix = localPart.length >= 2 ? localPart.substring(0, 2) : localPart;
+    const prefix =
+      localPart.length >= 2 ? localPart.substring(0, 2) : localPart;
     return `${prefix}***@${domain}`;
   }
 
   /**
    * Send welcome email via Postmark API
    */
-  public async sendWelcomeEmail(params: WelcomeEmailParams): Promise<EmailResult> {
+  public async sendWelcomeEmail(
+    params: WelcomeEmailParams
+  ): Promise<EmailResult> {
     try {
       const htmlBody = this.generateWelcomeEmailHtml(params);
       const textBody = this.generateWelcomeEmailText(params);
@@ -211,7 +214,7 @@ This email was sent to you because you registered for The Guild Conference.`;
       const response = await this.fetchFn('https://api.postmarkapp.com/email', {
         method: 'POST',
         headers: {
-          'Accept': 'application/json',
+          Accept: 'application/json',
           'Content-Type': 'application/json',
           'X-Postmark-Server-Token': this.apiKey,
         },
@@ -221,7 +224,7 @@ This email was sent to you because you registered for The Guild Conference.`;
       if (!response.ok) {
         const errorText = await response.text();
         let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-        
+
         try {
           const errorData = JSON.parse(errorText) as PostmarkResponse;
           if (errorData.Message) {
@@ -240,8 +243,8 @@ This email was sent to you because you registered for The Guild Conference.`;
         };
       }
 
-      const result = await response.json() as PostmarkResponse;
-      
+      const result = (await response.json()) as PostmarkResponse;
+
       // Verify we got a message ID indicating success
       if (!result.MessageID) {
         return {
@@ -251,9 +254,9 @@ This email was sent to you because you registered for The Guild Conference.`;
       }
 
       return { ok: true };
-
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       return {
         ok: false,
         error: `Email sending failed: ${errorMessage}`,
@@ -265,7 +268,10 @@ This email was sent to you because you registered for The Guild Conference.`;
 /**
  * Factory function to create an EmailClient instance
  */
-export function createEmailClient(apiKey: string, fetchFn?: typeof fetch): EmailClient {
+export function createEmailClient(
+  apiKey: string,
+  fetchFn?: typeof fetch
+): EmailClient {
   return new EmailClient(apiKey, fetchFn);
 }
 

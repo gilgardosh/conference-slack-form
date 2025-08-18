@@ -1,9 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { 
-  generateId, 
-  jsonResponse, 
-  errorResponse
-} from './utils';
+import { generateId, jsonResponse, errorResponse } from './utils';
 import { sanitizeCompanyName } from './utils/validation';
 
 describe('Worker Utils', () => {
@@ -30,7 +26,9 @@ describe('Worker Utils', () => {
     });
 
     it('should handle multiple spaces', () => {
-      expect(sanitizeCompanyName('Test   Company   Inc')).toBe('test-company-inc');
+      expect(sanitizeCompanyName('Test   Company   Inc')).toBe(
+        'test-company-inc'
+      );
     });
 
     it('should handle empty string', () => {
@@ -42,7 +40,7 @@ describe('Worker Utils', () => {
     it('should create a Response with JSON content type', () => {
       const data = { ok: true, message: 'test' };
       const response = jsonResponse(data);
-      
+
       expect(response).toBeInstanceOf(Response);
       expect(response.headers.get('Content-Type')).toBe('application/json');
     });
@@ -51,7 +49,7 @@ describe('Worker Utils', () => {
   describe('errorResponse', () => {
     it('should create error response with correct structure', () => {
       const response = errorResponse('TEST_ERROR', 'Test error message', 400);
-      
+
       expect(response).toBeInstanceOf(Response);
       expect(response.status).toBe(400);
       expect(response.headers.get('Content-Type')).toBe('application/json');

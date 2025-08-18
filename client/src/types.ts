@@ -8,7 +8,7 @@ export interface SanitizePreviewResponse {
   sanitizedCompanyName?: string;
   code?: string;
   message?: string;
-  errors?: Array<{ field: string; message: string; }>;
+  errors?: Array<{ field: string; message: string }>;
 }
 
 export interface SubmitResponse {
@@ -19,7 +19,7 @@ export interface SubmitResponse {
   emailSent?: boolean;
   errorCode?: string;
   message?: string;
-  errors?: Array<{ field: string; message: string; }>;
+  errors?: Array<{ field: string; message: string }>;
   metadata?: {
     type: string;
     remaining: number;

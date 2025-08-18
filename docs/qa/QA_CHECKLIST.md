@@ -7,11 +7,13 @@ This checklist provides step-by-step verification procedures for all manual test
 Before running any tests, ensure:
 
 1. **Worker is running:**
+
    ```bash
    cd worker && npx wrangler dev src/index.ts --port 8787
    ```
 
 2. **Client is running:**
+
    ```bash
    cd client && yarn run dev
    ```
@@ -27,6 +29,7 @@ Before running any tests, ensure:
 **Objective:** Verify complete end-to-end submission with Slack channel creation and email delivery.
 
 ### Steps:
+
 1. **Open the application** at `http://localhost:5173`
 2. **Fill in the form:**
    - Company Name: `Acme Corporation`
@@ -41,6 +44,7 @@ Before running any tests, ensure:
 7. **Wait for completion**
 
 ### Expected Results:
+
 - ✅ Success message: "✅ Successfully submitted! Check your email for further instructions."
 - ✅ Modal auto-closes after ~2 seconds
 - ✅ Form fields are cleared
@@ -54,6 +58,7 @@ Before running any tests, ensure:
 - ✅ **Slack logs:** Check designated log channel for success entry
 
 ### What to Look For:
+
 - **Slack channel:** `ext-theguild-acme-corporation` created
 - **Guest invite sent** to provided email
 - **@guild team invited** to channel
@@ -67,24 +72,29 @@ Before running any tests, ensure:
 **Objective:** Test validation rejection of free email providers.
 
 ### Steps:
+
 1. **Fill in form with:**
    - Company Name: `Test Company`
    - Email: `test@gmail.com`
 2. **Click "Submit"**
 
 ### Expected Results:
+
 - ❌ Form validation prevents submission
 - ❌ Error message appears: "Please use a business email address"
 - ❌ Modal does not open
 - ❌ No network requests made
 
 ### Additional Tests:
+
 Test other free providers:
+
 - `user@yahoo.com`
 - `user@hotmail.com`
 - `user@outlook.com`
 
 ### Verification Commands:
+
 ```bash
 # Check browser console for validation errors
 # Should see client-side validation blocking submission
@@ -98,6 +108,7 @@ Test other free providers:
 **Objective:** Test email format validation.
 
 ### Steps:
+
 1. **Test each invalid format:**
    - `invalid-email`
    - `@example.com`
@@ -108,12 +119,14 @@ Test other free providers:
 2. **For each, fill form and click "Submit"**
 
 ### Expected Results:
+
 - ❌ HTML5 validation prevents submission
 - ❌ Browser shows native validation message
 - ❌ Modal does not open
 - ❌ No network requests made
 
 ### Verification:
+
 ```bash
 # Browser will show native validation tooltips
 # No entries in Network tab of DevTools
@@ -126,17 +139,20 @@ Test other free providers:
 **Objective:** Test company name length validation.
 
 ### Steps:
+
 1. **Fill in form with:**
    - Company Name: `This is a very long company name that exceeds the sixty-seven character limit set by the validation rules` (68+ characters)
    - Email: `test@example.com`
 2. **Click "Submit"**
 
 ### Expected Results:
+
 - ❌ Form validation prevents submission
 - ❌ Error message appears near company name field
 - ❌ Modal does not open
 
 ### Verification Commands:
+
 ```bash
 # Count characters to verify > 67
 echo "This is a very long company name that exceeds the sixty-seven character limit set by the validation rules" | wc -c
@@ -149,6 +165,7 @@ echo "This is a very long company name that exceeds the sixty-seven character li
 **Objective:** Test submission blocking when sanitized name becomes empty.
 
 ### Steps:
+
 1. **Fill in form with:**
    - Company Name: `!@#$%^&*()_+{}|:"<>?[]\\;',.` (only special characters)
    - Email: `test@example.com`
@@ -156,14 +173,17 @@ echo "This is a very long company name that exceeds the sixty-seven character li
 3. **Check sanitized preview in modal**
 
 ### Expected Results:
+
 - ⚠️ Modal opens but shows empty sanitized name
 - ❌ "Confirm" button should be disabled
 - ❌ Cannot proceed with submission
 
 ### Alternative Test:
+
 - Company Name: `🚀🎉✨` (only emojis)
 
 ### Verification:
+
 ```bash
 # Modal should show:
 # Raw: "!@#$%^&*()_+{}|:"<>?[]\\;',./"
@@ -178,9 +198,11 @@ echo "This is a very long company name that exceeds the sixty-seven character li
 **Objective:** Test duplicate email rejection.
 
 ### Prerequisites:
+
 Complete a successful submission first (Scenario 1).
 
 ### Steps:
+
 1. **Fill in form with:**
    - Company Name: `Different Company`
    - Email: `test@acmecorp.com` (same email from Scenario 1)
@@ -188,12 +210,14 @@ Complete a successful submission first (Scenario 1).
 3. **Wait for response**
 
 ### Expected Results:
+
 - ❌ Error message: "This email has already been used for a submission"
 - ❌ Modal stays open for retry
 - ❌ No new Slack channel created
 - ❌ No new email sent
 
 ### Verification Commands:
+
 ```bash
 # Check Slack channels - should not see duplicate
 curl -H "Authorization: Bearer ${SLACK_BOT_TOKEN}" \
@@ -208,9 +232,11 @@ curl -H "Authorization: Bearer ${SLACK_BOT_TOKEN}" \
 **Objective:** Test rate limiting feedback display.
 
 ### Setup:
+
 Temporarily modify worker or submit multiple requests quickly.
 
 ### Steps:
+
 1. **Submit multiple valid requests rapidly:**
    - Use different company names but same IP
    - Submit 6+ requests within rate limit window
@@ -219,18 +245,21 @@ Temporarily modify worker or submit multiple requests quickly.
    - Try submitting with different email
 
 ### Expected Results:
+
 - ❌ Error message: "Rate limit exceeded (ip rate limit, X remaining)" or "Rate limit exceeded (email rate limit, X remaining)"
 - ❌ Modal stays open
 - ✅ User can retry with different data
 - ✅ **Slack logs:** Rate limit events logged
 
 ### Alternative Test (IP Rate Limit):
+
 ```bash
 # Simulate 429 response by temporarily modifying worker:
 # Return 429 status with rate limit metadata
 ```
 
 ### Verification:
+
 ```bash
 # Check Slack log channel for rate limit notifications
 # Should see entries with IP address and attempt details
@@ -245,10 +274,12 @@ Temporarily modify worker or submit multiple requests quickly.
 ### Setup Options:
 
 **Option A - Invalid API Keys:**
+
 1. Temporarily set invalid `SLACK_BOT_TOKEN` or `POSTMARK_API_KEY`
 2. Restart worker
 
 **Option B - Simulate 502 Response:**
+
 ```bash
 # Temporarily modify worker to return 502:
 return new Response(JSON.stringify({
@@ -258,17 +289,20 @@ return new Response(JSON.stringify({
 ```
 
 ### Steps:
+
 1. **Fill in form with valid data**
 2. **Click "Submit" → "Confirm"**
 3. **Wait for response**
 
 ### Expected Results:
+
 - ❌ Error message: "Submission failed — we're looking into it"
 - ❌ Modal stays open for retry
 - ✅ **Console:** Error logged to browser console
 - ✅ **Slack logs:** Error logged to Slack log channel
 
 ### Verification Commands:
+
 ```bash
 # Check browser console (F12) for 502 error
 # Check Slack log channel for error entries
@@ -282,6 +316,7 @@ return new Response(JSON.stringify({
 **Objective:** Test modal functionality, display, and interaction.
 
 ### Steps:
+
 1. **Test modal opening:**
    - Submit valid form
    - Verify modal appears instantly
@@ -301,6 +336,7 @@ return new Response(JSON.stringify({
    - Try rapid clicking "Submit" → only one modal should appear
 
 ### Expected Results:
+
 - ✅ Modal appears instantly on submit
 - ✅ Background interaction blocked
 - ✅ Content displays correctly
@@ -309,6 +345,7 @@ return new Response(JSON.stringify({
 - ✅ No animation/title/header
 
 ### Verification:
+
 ```bash
 # Test with sanitization examples:
 # "Café Ñoño & Co!" should become "cafe-nono-co"
@@ -322,6 +359,7 @@ return new Response(JSON.stringify({
 **Objective:** Test UI consistency and readability in dark mode.
 
 ### Steps:
+
 1. **Toggle dark mode** using the dark mode button
 2. **Verify appearance:**
    - Form styling and contrast
@@ -332,6 +370,7 @@ return new Response(JSON.stringify({
 4. **Toggle back to light mode and verify**
 
 ### Expected Results:
+
 - ✅ All text is readable with proper contrast
 - ✅ Form elements have appropriate dark styling
 - ✅ Modal is properly styled for dark mode
@@ -340,6 +379,7 @@ return new Response(JSON.stringify({
 - ✅ All functionality works identically in both modes
 
 ### Verification:
+
 ```bash
 # Use browser DevTools to check contrast ratios
 # Verify CSS custom properties are properly applied
@@ -353,6 +393,7 @@ return new Response(JSON.stringify({
 **Objective:** Test mobile experience and touch interactions.
 
 ### Steps:
+
 1. **Open browser DevTools** (F12)
 2. **Toggle device simulation:**
    - iPhone SE (375px width)
@@ -366,6 +407,7 @@ return new Response(JSON.stringify({
 4. **Test actual mobile device if available**
 
 ### Expected Results:
+
 - ✅ Form is usable on all screen sizes
 - ✅ Modal fits properly on small screens
 - ✅ Touch targets are adequately sized (44px minimum)
@@ -374,6 +416,7 @@ return new Response(JSON.stringify({
 - ✅ All interactions work with touch
 
 ### Verification Commands:
+
 ```bash
 # Test with browser device simulation:
 # Chrome DevTools → Toggle device toolbar
@@ -387,6 +430,7 @@ return new Response(JSON.stringify({
 **Objective:** Test network connectivity failure handling.
 
 ### Setup:
+
 ```bash
 # Stop the worker service
 cd worker
@@ -394,16 +438,19 @@ cd worker
 ```
 
 ### Steps:
+
 1. **With worker stopped, fill in valid form data**
 2. **Click "Submit" → "Confirm"**
 3. **Wait for request to timeout**
 
 ### Expected Results:
+
 - ❌ Error message: "Network error. Please check your connection and try again."
 - ❌ Modal stays open for retry
 - ✅ User can restart worker and retry
 
 ### Alternative Test:
+
 ```bash
 # Use browser DevTools:
 # Network tab → Throttling → Offline
@@ -415,6 +462,7 @@ cd worker
 ## Verification Commands Summary
 
 ### Check Slack Integration:
+
 ```bash
 # List recent channels (requires SLACK_BOT_TOKEN)
 curl -H "Authorization: Bearer ${SLACK_BOT_TOKEN}" \
@@ -426,6 +474,7 @@ curl -H "Authorization: Bearer ${SLACK_BOT_TOKEN}" \
 ```
 
 ### Check Rate Limiting:
+
 ```bash
 # Monitor worker logs during testing
 npx wrangler tail
@@ -435,6 +484,7 @@ npx wrangler tail
 ```
 
 ### Monitor Application Logs:
+
 ```bash
 # Worker logs
 npx wrangler tail
@@ -444,6 +494,7 @@ npx wrangler tail
 ```
 
 ### Test Data Cleanup:
+
 ```bash
 # After testing, clean up test channels if needed
 # (Manually via Slack interface or API calls)
@@ -454,6 +505,7 @@ npx wrangler tail
 ## Pass/Fail Criteria
 
 ### ✅ Pass Criteria:
+
 - All form validations work correctly
 - Successful submissions create Slack channels and send emails
 - Error messages are user-friendly and helpful
@@ -464,6 +516,7 @@ npx wrangler tail
 - Network errors are handled gracefully
 
 ### ❌ Fail Criteria:
+
 - Form allows invalid data submission
 - Successful submissions don't create expected resources
 - Error messages are confusing or missing
@@ -487,6 +540,7 @@ When reporting issues found during QA:
 6. **Note expected vs. actual behavior**
 
 ### Example Issue Report:
+
 ```
 Scenario: 2 (Invalid Email)
 Browser: Chrome 120.0.0.0

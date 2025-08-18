@@ -16,14 +16,14 @@ The following environment variables must be configured in Cloudflare:
 
 ### Required Variables
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `SLACK_BOT_TOKEN` | Slack Bot User OAuth Token (starts with `xoxb-`) | `xoxb-1234567890-abcdef...` |
-| `SLACK_TEAM_ID` | Your Slack workspace/team ID | `T1234567890` |
-| `SLACK_LOG_CHANNEL_ID` | Channel ID for logging events | `C1234567890` |
-| `POSTMARK_API_KEY` | Postmark server API key | `your-postmark-key` |
-| `RATE_LIMIT` | Maximum submissions per window per IP/email | `5` |
-| `RATE_LIMIT_WINDOW_SEC` | Rate limit window duration in seconds | `3600` |
+| Variable                | Description                                      | Example                     |
+| ----------------------- | ------------------------------------------------ | --------------------------- |
+| `SLACK_BOT_TOKEN`       | Slack Bot User OAuth Token (starts with `xoxb-`) | `xoxb-1234567890-abcdef...` |
+| `SLACK_TEAM_ID`         | Your Slack workspace/team ID                     | `T1234567890`               |
+| `SLACK_LOG_CHANNEL_ID`  | Channel ID for logging events                    | `C1234567890`               |
+| `POSTMARK_API_KEY`      | Postmark server API key                          | `your-postmark-key`         |
+| `RATE_LIMIT`            | Maximum submissions per window per IP/email      | `5`                         |
+| `RATE_LIMIT_WINDOW_SEC` | Rate limit window duration in seconds            | `3600`                      |
 
 ## Deployment Steps
 
@@ -63,6 +63,7 @@ npx wrangler secret put RATE_LIMIT_WINDOW_SEC
 ```
 
 Alternatively, set variables through the Cloudflare Dashboard:
+
 1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com)
 2. Navigate to Workers & Pages
 3. Select your worker
@@ -98,16 +99,19 @@ VITE_API_BASE_URL=https://your-worker-subdomain.your-account.workers.dev yarn bu
 ⚠️ **Important**: The current rate limiter implementation has these limitations:
 
 ### Single-Instance Memory Storage
+
 - Rate limit data is stored **in-memory per Worker instance**
 - Multiple Worker instances (due to geographic distribution or scaling) maintain **separate rate limit counters**
 - This means the effective rate limit may be higher than configured in high-traffic scenarios
 
 ### No Persistence
+
 - Rate limit data is **lost on Worker restart or deployment**
 - Cold starts reset all rate limit counters
 - No historical rate limit data is maintained
 
 ### Recommended Improvements for Production
+
 For production environments with strict rate limiting requirements, consider:
 
 1. **Durable Objects**: Use Cloudflare Durable Objects for centralized, persistent rate limiting
@@ -115,6 +119,7 @@ For production environments with strict rate limiting requirements, consider:
 3. **KV Storage**: Use Cloudflare KV for simple persistent counters (with eventual consistency trade-offs)
 
 The current implementation is suitable for:
+
 - Development and testing environments
 - Low to moderate traffic scenarios
 - Basic abuse prevention
@@ -126,6 +131,7 @@ The current implementation is suitable for:
 If you need to quickly disable the Worker:
 
 1. **Via Wrangler CLI:**
+
    ```bash
    npx wrangler delete
    ```
@@ -144,6 +150,7 @@ If you need to quickly disable the Worker:
 For a more controlled rollback:
 
 1. **Deploy Previous Version:**
+
    ```bash
    # If you have a previous version in git
    git checkout <previous-version-tag>
@@ -163,17 +170,20 @@ For a more controlled rollback:
 ## Monitoring and Maintenance
 
 ### Health Checks
+
 - Monitor Worker logs in Cloudflare Dashboard
 - Set up alerts for error rates in designated Slack channel
 - Check Postmark delivery statistics regularly
 
 ### Regular Maintenance
+
 - Update dependencies monthly
 - Review and rotate API tokens quarterly
 - Monitor rate limit effectiveness and adjust as needed
 - Test disaster recovery procedures
 
 ### Scaling Considerations
+
 - Workers automatically scale with traffic
 - Consider upgrading to paid plan for higher limits
 - Monitor CPU time and memory usage in Cloudflare analytics
@@ -203,6 +213,7 @@ For a more controlled rollback:
    - Ensure target channels exist and bot has access
 
 ### Support Resources
+
 - [Cloudflare Workers Documentation](https://developers.cloudflare.com/workers/)
 - [Wrangler CLI Reference](https://developers.cloudflare.com/workers/wrangler/)
 - [Slack API Documentation](https://api.slack.com/)

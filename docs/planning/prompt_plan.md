@@ -14,7 +14,7 @@ Single-file React SPA (Tailwind + shadcn) served by a Cloudflare Worker. The Wor
 
 1. User opens SPA (served by Worker).
 2. User fills company name + email → client-side basic validation + opens modal.
-3. Modal shows raw and *server-sanitized preview* (server sanitization is definitive) — user confirms.
+3. Modal shows raw and _server-sanitized preview_ (server sanitization is definitive) — user confirms.
 4. Client POSTs to Worker API `/api/submit`.
 5. Worker: rate-limit (IP/email), server-side sanitize & validate (Zod), ensure `sanitizedCompanyName` ≠ empty, compute `channelName`, check Slack collisions, create channel, invite `@guild` group and single-channel guest, post to Slack logging channel, send Postmark email. Return minimal success/failure to client.
 6. Client shows modal success; local form resets.
@@ -23,15 +23,15 @@ Single-file React SPA (Tailwind + shadcn) served by a Cloudflare Worker. The Wor
 
 # 3) Milestones (phased)
 
-* **M0 — Repo + Tooling**: initialize repo, TypeScript, monorepo layout (client + worker), build scripts, strict linting, basic CI (optional), eslint/prettier, vitest.
-* **M1 — Worker API core**: Cloudflare Worker scaffolding, basic API route `/api/ping` and `/api/submit` stub, env config.
-* **M2 — Validation & Sanitization**: Zod schemas + sanitize utilities + unit tests.
-* **M3 — Slack module**: Slack helper to create channel, handle collisions, invite group and guest; logging helper to log to designated Slack channel.
-* **M4 — Email module**: Postmark integration + template wiring.
-* **M5 — Rate-limiter**: IP + email rate-limiter with in-memory cache for Worker (config via env).
-* **M6 — Frontend UI**: React + Tailwind + shadcn UI form, modal behavior, accessibility hooks, dark mode.
-* **M7 — Integration**: Wire frontend to Worker API, implement loading states, error flows, retries/no-retries for email.
-* **M8 — Deployment & QA**: Wrangler config, environment variable docs, deploy script, QA checklist & manual test results.
+- **M0 — Repo + Tooling**: initialize repo, TypeScript, monorepo layout (client + worker), build scripts, strict linting, basic CI (optional), eslint/prettier, vitest.
+- **M1 — Worker API core**: Cloudflare Worker scaffolding, basic API route `/api/ping` and `/api/submit` stub, env config.
+- **M2 — Validation & Sanitization**: Zod schemas + sanitize utilities + unit tests.
+- **M3 — Slack module**: Slack helper to create channel, handle collisions, invite group and guest; logging helper to log to designated Slack channel.
+- **M4 — Email module**: Postmark integration + template wiring.
+- **M5 — Rate-limiter**: IP + email rate-limiter with in-memory cache for Worker (config via env).
+- **M6 — Frontend UI**: React + Tailwind + shadcn UI form, modal behavior, accessibility hooks, dark mode.
+- **M7 — Integration**: Wire frontend to Worker API, implement loading states, error flows, retries/no-retries for email.
+- **M8 — Deployment & QA**: Wrangler config, environment variable docs, deploy script, QA checklist & manual test results.
 
 ---
 
@@ -50,12 +50,12 @@ Below each Milestone, I break into small steps and then into micro-steps so each
 
 **Micro-steps**
 
-* `yarn init -y`
-* `git init`
-* Create `package.json` workspace config (or single package) with scripts: `build`, `dev`, `test`, `format`.
-* Add `tsconfig.json` with `strict: true`.
-* Add `eslintrc` + `prettier`.
-* Add `vitest` and a sample test file.
+- `yarn init -y`
+- `git init`
+- Create `package.json` workspace config (or single package) with scripts: `build`, `dev`, `test`, `format`.
+- Add `tsconfig.json` with `strict: true`.
+- Add `eslintrc` + `prettier`.
+- Add `vitest` and a sample test file.
 
 ---
 
@@ -69,10 +69,10 @@ Below each Milestone, I break into small steps and then into micro-steps so each
 
 **Micro-steps**
 
-* Add `worker/src/index.ts` with router.
-* Implement `/api/ping` returning JSON `{ok:true}`.
-* Implement `/api/submit` that validates JSON shape and returns 400/200 with structured errors.
-* Add environment variable typings for `SLACK_BOT_TOKEN`, `POSTMARK_API_KEY`, etc.
+- Add `worker/src/index.ts` with router.
+- Implement `/api/ping` returning JSON `{ok:true}`.
+- Implement `/api/submit` that validates JSON shape and returns 400/200 with structured errors.
+- Add environment variable typings for `SLACK_BOT_TOKEN`, `POSTMARK_API_KEY`, etc.
 
 Acceptance: `curl` to `/api/ping` returns 200; POST to `/api/submit` with malformed body returns 400.
 
@@ -88,8 +88,8 @@ Acceptance: `curl` to `/api/ping` returns 200; POST to `/api/submit` with malfor
 
 **Micro-steps**
 
-* Create `worker/src/lib/validation.ts` exporting Zod schema and `sanitizeCompanyName()` function.
-* Unit tests for accent removal, emoji stripping, and length enforcement.
+- Create `worker/src/lib/validation.ts` exporting Zod schema and `sanitizeCompanyName()` function.
+- Unit tests for accent removal, emoji stripping, and length enforcement.
 
 Acceptance: sanitized examples in tests match expected outputs.
 
@@ -106,14 +106,14 @@ Acceptance: sanitized examples in tests match expected outputs.
 
 **Micro-steps**
 
-* Create `worker/src/lib/slack.ts` exposing:
+- Create `worker/src/lib/slack.ts` exposing:
+  - `createChannelIfNotExists(sanitizedName)`
+  - `inviteGuestToChannel(email, channelId)`
+  - `inviteGroupToChannel(channelId)`
+  - `logEvent(message, level)` (posts to logging channel)
 
-  * `createChannelIfNotExists(sanitizedName)`
-  * `inviteGuestToChannel(email, channelId)`
-  * `inviteGroupToChannel(channelId)`
-  * `logEvent(message, level)` (posts to logging channel)
-* Unit/integration tests using mocks (or a small abstraction layer so tests don't hit Slack).
-* Ensure rate limits are respected (backoff), but errors are logged, not retried indefinitely.
+- Unit/integration tests using mocks (or a small abstraction layer so tests don't hit Slack).
+- Ensure rate limits are respected (backoff), but errors are logged, not retried indefinitely.
 
 Acceptance: functions return predictable shapes; test mocks assert correct endpoints and payloads.
 
@@ -128,8 +128,8 @@ Acceptance: functions return predictable shapes; test mocks assert correct endpo
 
 **Micro-steps**
 
-* Create `worker/src/lib/email.ts` with `sendWelcomeEmail({company, email, channelUrl})`.
-* Unit test mocking Postmark responses.
+- Create `worker/src/lib/email.ts` with `sendWelcomeEmail({company, email, channelUrl})`.
+- Unit test mocking Postmark responses.
 
 ---
 
@@ -142,8 +142,8 @@ Acceptance: functions return predictable shapes; test mocks assert correct endpo
 
 **Micro-steps**
 
-* Create `worker/src/lib/rateLimiter.ts` using a Map with expiration.
-* Tests to simulate bursts and confirm blocking occurs.
+- Create `worker/src/lib/rateLimiter.ts` using a Map with expiration.
+- Tests to simulate bursts and confirm blocking occurs.
 
 Acceptance: blocked requests get structured response code 429.
 
@@ -159,9 +159,9 @@ Acceptance: blocked requests get structured response code 429.
 
 **Micro-steps**
 
-* `client/src/App.tsx` with form and modal components.
-* `client/src/lib/api.ts` with `sanitizationPreview()` and `submit()` functions.
-* Visual validation UI, disabled button state, and reset behavior after success.
+- `client/src/App.tsx` with form and modal components.
+- `client/src/lib/api.ts` with `sanitizationPreview()` and `submit()` functions.
+- Visual validation UI, disabled button state, and reset behavior after success.
 
 Acceptance: local dev `yarn start` shows form; modal shows preview returned by the worker.
 
@@ -177,8 +177,8 @@ Acceptance: local dev `yarn start` shows form; modal shows preview returned by t
 
 **Micro-steps**
 
-* Ensure fetch has timeouts and shows fallback messages.
-* Clear fields on success; maintain ability to retry with new email.
+- Ensure fetch has timeouts and shows fallback messages.
+- Clear fields on success; maintain ability to retry with new email.
 
 Acceptance: successful submit triggers Slack+email mock flows via worker stubs.
 
@@ -194,9 +194,9 @@ Acceptance: successful submit triggers Slack+email mock flows via worker stubs.
 
 **Micro-steps**
 
-* `wrangler publish` config file.
-* `README.md` with deploy instructions and QA checklist.
-* Final end-to-end manual test guide (10 scenarios from Developer Spec).
+- `wrangler publish` config file.
+- `README.md` with deploy instructions and QA checklist.
+- Final end-to-end manual test guide (10 scenarios from Developer Spec).
 
 ---
 
@@ -519,9 +519,9 @@ Acceptance:
 
 # 6) Notes on iterating with the LLM
 
-* Run prompts one at a time and run the acceptance tests before moving forward.
-* If a generated prompt output diverges, fix immediately and re-run `test` before continuing.
-* For Slack API specifics (scopes and single-channel guest invites), if the generator is uncertain, code should implement a clear stub and document the exact Slack scopes required so you can obtain the right token.
+- Run prompts one at a time and run the acceptance tests before moving forward.
+- If a generated prompt output diverges, fix immediately and re-run `test` before continuing.
+- For Slack API specifics (scopes and single-channel guest invites), if the generator is uncertain, code should implement a clear stub and document the exact Slack scopes required so you can obtain the right token.
 
 ---
 
@@ -537,15 +537,15 @@ Acceptance:
 
 # 8) Quick checklist (ready-to-use)
 
-* [x] Repo initialized (Prompt 0)
-* [x] Worker routes implemented (Prompt 1)
-* [x] Sanitization + validation (Prompt 2)
-* [x] Slack module (Prompt 3)
-* [x] Postmark module (Prompt 4)
-* [x] Rate limiter (Prompt 5)
-* [x] Submit handler wiring (Prompt 6)
-* [x] Client scaffold (Prompt 7)
-* [x] Client-wire + error handling (Prompt 8)
-* [x] Docs, secrets, QA (Prompt 9)
-* [x] Deployment scripts (Prompt 10)
-* [x] Final lint/tests/polish (Prompt 11)
+- [x] Repo initialized (Prompt 0)
+- [x] Worker routes implemented (Prompt 1)
+- [x] Sanitization + validation (Prompt 2)
+- [x] Slack module (Prompt 3)
+- [x] Postmark module (Prompt 4)
+- [x] Rate limiter (Prompt 5)
+- [x] Submit handler wiring (Prompt 6)
+- [x] Client scaffold (Prompt 7)
+- [x] Client-wire + error handling (Prompt 8)
+- [x] Docs, secrets, QA (Prompt 9)
+- [x] Deployment scripts (Prompt 10)
+- [x] Final lint/tests/polish (Prompt 11)

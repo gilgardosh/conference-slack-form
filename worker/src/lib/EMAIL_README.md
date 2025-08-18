@@ -17,19 +17,25 @@ The email service provides functionality to send welcome emails using the Postma
 ```typescript
 import { sendWelcomeEmail } from './lib/email';
 
-const result = await sendWelcomeEmail({
-  companyName: 'Acme Corp',
-  email: 'contact@acme.com',
-  channelName: 'ext-theguild-acme-corp',
-  channelUrl: 'https://theguild.slack.com/channels/C1234567890'
-}, env.POSTMARK_API_KEY);
+const result = await sendWelcomeEmail(
+  {
+    companyName: 'Acme Corp',
+    email: 'contact@acme.com',
+    channelName: 'ext-theguild-acme-corp',
+    channelUrl: 'https://theguild.slack.com/channels/C1234567890',
+  },
+  env.POSTMARK_API_KEY
+);
 
 if (result.ok) {
   console.log('Email sent successfully');
 } else {
   console.error('Email failed:', result.error);
   // Log to Slack for visibility
-  await slackClient.logToChannel(`Email sending failed: ${result.error}`, 'error');
+  await slackClient.logToChannel(
+    `Email sending failed: ${result.error}`,
+    'error'
+  );
 }
 ```
 
@@ -44,7 +50,7 @@ const result = await emailClient.sendWelcomeEmail({
   companyName: 'Acme Corp',
   email: 'contact@acme.com',
   channelName: 'ext-theguild-acme-corp',
-  channelUrl: 'https://theguild.slack.com/channels/C1234567890'
+  channelUrl: 'https://theguild.slack.com/channels/C1234567890',
 });
 ```
 
@@ -57,17 +63,24 @@ import { createSlackClient } from './lib/slack';
 import { sendWelcomeEmail } from './lib/email';
 
 // 1. Create Slack channel
-const slackClient = createSlackClient(env.SLACK_BOT_TOKEN, env.SLACK_TEAM_ID, env.SLACK_LOG_CHANNEL_ID);
+const slackClient = createSlackClient(
+  env.SLACK_BOT_TOKEN,
+  env.SLACK_TEAM_ID,
+  env.SLACK_LOG_CHANNEL_ID
+);
 const channelResult = await slackClient.createChannel(sanitizedCompanyName);
 
 if (channelResult.ok) {
   // 2. Send welcome email
-  const emailResult = await sendWelcomeEmail({
-    companyName: originalCompanyName,
-    email: userEmail,
-    channelName: channelResult.channelName,
-    channelUrl: `https://theguild.slack.com/channels/${channelResult.channelId}`
-  }, env.POSTMARK_API_KEY);
+  const emailResult = await sendWelcomeEmail(
+    {
+      companyName: originalCompanyName,
+      email: userEmail,
+      channelName: channelResult.channelName,
+      channelUrl: `https://theguild.slack.com/channels/${channelResult.channelId}`,
+    },
+    env.POSTMARK_API_KEY
+  );
 
   if (!emailResult.ok) {
     // 3. Log failures to Slack
@@ -124,9 +137,7 @@ Email addresses are automatically sanitized in logs:
 The service returns structured error responses:
 
 ```typescript
-type EmailResult = 
-  | { ok: true }
-  | { ok: false; error: string }
+type EmailResult = { ok: true } | { ok: false; error: string };
 ```
 
 ### Common Error Scenarios

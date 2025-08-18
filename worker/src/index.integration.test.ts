@@ -101,7 +101,9 @@ describe('/api/submit endpoint integration tests', () => {
 
     // Verify the flow was called in the correct order
     expect(mockSlackClient.createChannel).toHaveBeenCalledWith('test-company');
-    expect(mockSlackClient.inviteGroup).toHaveBeenCalledWith('C123456789', ['U1234567890']);
+    expect(mockSlackClient.inviteGroup).toHaveBeenCalledWith('C123456789', [
+      'U1234567890',
+    ]);
     expect(mockSlackClient.inviteGuest).toHaveBeenCalledWith(
       'test@company.com',
       'C123456789'

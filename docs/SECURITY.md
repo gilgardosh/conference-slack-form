@@ -50,23 +50,23 @@ npx wrangler secret put POSTMARK_API_KEY
 
 The Slack Bot Token must have the following **minimum required scopes:**
 
-| Scope | Purpose | Description |
-|-------|---------|-------------|
-| `channels:write` | Channel creation | Create new public/private channels |
-| `users:write` | User invitations | Invite external users as single-channel guests |
-| `users:read` | User lookup | Read user information for invitations |
-| `chat:write` | Logging | Send messages to logging channel |
+| Scope            | Purpose          | Description                                    |
+| ---------------- | ---------------- | ---------------------------------------------- |
+| `channels:write` | Channel creation | Create new public/private channels             |
+| `users:write`    | User invitations | Invite external users as single-channel guests |
+| `users:read`     | User lookup      | Read user information for invitations          |
+| `chat:write`     | Logging          | Send messages to logging channel               |
 
 ### ⚠️ Additional Scopes (Use with Caution)
 
 These scopes provide broader access and should only be added if specifically required:
 
-| Scope | Risk Level | Notes |
-|-------|------------|-------|
-| `channels:read` | Low | Read channel information |
-| `users:read.email` | Medium | Access user email addresses |
-| `admin` | **HIGH** | ❌ **Never grant admin scopes** |
-| `files:write` | Medium | Only if file uploads needed |
+| Scope              | Risk Level | Notes                           |
+| ------------------ | ---------- | ------------------------------- |
+| `channels:read`    | Low        | Read channel information        |
+| `users:read.email` | Medium     | Access user email addresses     |
+| `admin`            | **HIGH**   | ❌ **Never grant admin scopes** |
+| `files:write`      | Medium     | Only if file uploads needed     |
 
 ### 🔒 Recommended Security Configuration
 
@@ -96,7 +96,7 @@ The Worker implements strict CORS policies:
 // Allowed origins for development and production
 const allowedOrigins = [
   'http://localhost:3000',     // Client dev server
-  'http://localhost:5173',     // Vite dev server  
+  'http://localhost:5173',     // Vite dev server
   'https://your-domain.com'    // Production domain
 ];
 
@@ -117,24 +117,24 @@ const allowedOrigins = [
 ### ⚠️ CORS Configuration Guidelines
 
 **For Development:**
+
 ```typescript
 // Allow localhost with specific ports only
-const devOrigins = [
-  'http://localhost:3000',
-  'http://localhost:5173'
-];
+const devOrigins = ['http://localhost:3000', 'http://localhost:5173'];
 ```
 
 **For Production:**
+
 ```typescript
 // Allow only your production domain(s)
 const prodOrigins = [
   'https://conference-form.yourdomain.com',
-  'https://yourdomain.com'
+  'https://yourdomain.com',
 ];
 ```
 
 **❌ Never allow:**
+
 ```typescript
 // DON'T: Wildcard origins in production
 'Access-Control-Allow-Origin': '*'
@@ -158,7 +158,7 @@ const prodOrigins = [
 - Required: cannot be empty
 - Format: basic character restrictions
 
-// Email validation  
+// Email validation
 - Format: standard email regex
 - Blocklist: free email providers
 - Required: cannot be empty
@@ -222,7 +222,7 @@ The rate limiting system provides security against:
 const ipKey = `ip:${clientIP}`;
 const ipLimit = parseInt(RATE_LIMIT); // e.g., 5 requests
 
-// Per-email rate limiting  
+// Per-email rate limiting
 const emailKey = `email:${sanitizedEmail}`;
 const emailLimit = 1; // One submission per email ever
 
@@ -233,11 +233,13 @@ const windowSeconds = parseInt(RATE_LIMIT_WINDOW_SEC); // e.g., 3600
 ### 🔒 Security Considerations
 
 **Current Limitations:**
+
 - ⚠️ **In-memory storage** - limits reset on Worker restart
 - ⚠️ **Single-instance** - multiple Worker instances have separate limits
 - ⚠️ **No distributed coordination** across geographic regions
 
 **Recommended Production Improvements:**
+
 1. **Durable Objects** for centralized rate limiting
 2. **Cloudflare KV** for persistent storage (eventual consistency)
 3. **Redis integration** for real-time distributed limiting
@@ -250,10 +252,12 @@ const windowSeconds = parseInt(RATE_LIMIT_WINDOW_SEC); // e.g., 3600
 ### Endpoint Protection
 
 **Public Endpoints** (require rate limiting):
+
 - `POST /api/submit` - Form submission
 - `POST /api/sanitize-preview` - Company name preview
 
 **Security measures applied:**
+
 - CORS origin validation
 - Input sanitization and validation
 - Rate limiting per IP and email
@@ -282,17 +286,19 @@ try {
 ### Response Security
 
 **Safe error messages:**
+
 - Generic error messages for external API failures
 - No sensitive information leaked in error responses
 - Consistent error format to prevent information disclosure
 
 **Example secure error handling:**
+
 ```typescript
 // ✅ Good: Generic message
-"Submission failed — we're looking into it"
+"Submission failed — we're looking into it";
 
-// ❌ Bad: Exposes internal details  
-"Slack API returned 403: invalid_auth token xoxb-123..."
+// ❌ Bad: Exposes internal details
+'Slack API returned 403: invalid_auth token xoxb-123...';
 ```
 
 ---
@@ -302,12 +308,14 @@ try {
 ### Secure Logging Practices
 
 **What IS logged to Slack:**
+
 - Successful submission events (email + company name)
 - Rate limit violations (IP address only)
 - Generic error events (no sensitive details)
 - Application startup/deployment events
 
 **What is NOT logged:**
+
 - API tokens or secrets
 - Full request/response bodies
 - Internal error details with sensitive information
@@ -316,6 +324,7 @@ try {
 ### Log Channel Security
 
 **Slack logging channel configuration:**
+
 - Private channel with restricted membership
 - Only essential team members have access
 - Channel history retention policies configured
@@ -336,11 +345,13 @@ try {
 ### Data Handling Principles
 
 **Ephemeral Processing:**
+
 - No persistent database storage
 - All data processed in-memory per request
 - No long-term data retention by the application
 
 **Third-Party Data Sharing:**
+
 - Slack: Company name and email (for channel creation and invites)
 - Postmark: Email address (for welcome email delivery)
 - No data shared with analytics or tracking services
@@ -348,12 +359,14 @@ try {
 ### GDPR Compliance Considerations
 
 **Data Controller responsibilities:**
+
 - Inform users what data is collected and why
 - Provide mechanisms for data deletion requests
 - Maintain records of processing activities
 - Implement privacy by design principles
 
 **User rights:**
+
 - Right to access: Users can see their data in Slack channels
 - Right to deletion: Channels can be deleted, emails can be removed from Postmark
 - Right to portability: Data is minimal and easily exportable
@@ -385,6 +398,7 @@ try {
 ### Emergency Procedures
 
 **Immediate Response:**
+
 ```bash
 # 1. Disable Worker immediately
 npx wrangler delete
@@ -392,7 +406,7 @@ npx wrangler delete
 # 2. Revoke Slack tokens
 # Go to Slack App management → OAuth & Permissions → Revoke
 
-# 3. Revoke Postmark keys  
+# 3. Revoke Postmark keys
 # Go to Postmark → API Tokens → Delete
 
 # 4. Check logs for unauthorized activity
@@ -400,6 +414,7 @@ npx wrangler tail --format pretty
 ```
 
 **Recovery Steps:**
+
 1. Investigate root cause
 2. Implement security fixes
 3. Generate new tokens with minimal required scopes

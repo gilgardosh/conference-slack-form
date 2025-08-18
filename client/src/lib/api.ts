@@ -1,4 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8787';
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || 'http://localhost:8787';
 
 export interface ApiResponse<T = unknown> {
   ok: boolean;
@@ -25,7 +26,9 @@ export interface RateLimitMetadata {
 /**
  * Calls the sanitize preview endpoint to get a preview of the sanitized company name
  */
-export async function sanitizePreview(companyName: string): Promise<ApiResponse<SanitizePreviewData>> {
+export async function sanitizePreview(
+  companyName: string
+): Promise<ApiResponse<SanitizePreviewData>> {
   try {
     const response = await fetch(`${API_BASE_URL}/api/sanitize-preview`, {
       method: 'POST',
@@ -67,7 +70,9 @@ export async function submitSubmission({
 }: {
   companyName: string;
   email: string;
-}): Promise<ApiResponse<SubmitData> & { rateLimitInfo?: RateLimitMetadata | undefined }> {
+}): Promise<
+  ApiResponse<SubmitData> & { rateLimitInfo?: RateLimitMetadata | undefined }
+> {
   try {
     const response = await fetch(`${API_BASE_URL}/api/submit`, {
       method: 'POST',
@@ -81,11 +86,13 @@ export async function submitSubmission({
 
     if (response.status === 429) {
       // Rate limit error
-      const rateLimitInfo = result.metadata ? {
-        type: result.metadata.type as 'email' | 'ip',
-        remaining: result.metadata.remaining,
-      } : undefined;
-      
+      const rateLimitInfo = result.metadata
+        ? {
+            type: result.metadata.type as 'email' | 'ip',
+            remaining: result.metadata.remaining,
+          }
+        : undefined;
+
       return {
         ok: false,
         error: result.message || 'Rate limit exceeded',
@@ -97,7 +104,7 @@ export async function submitSubmission({
       // Slack error
       return {
         ok: false,
-        error: 'Submission failed — we\'re looking into it',
+        error: "Submission failed — we're looking into it",
       };
     }
 

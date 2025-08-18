@@ -4,79 +4,91 @@ import type { Env } from './types';
 // Mock Slack and Email services
 vi.mock('./lib/slack', () => ({
   createSlackClient: vi.fn(() => ({
-    logToChannel: vi.fn().mockResolvedValue({ ok: true, timestamp: '1234567890.123456' }),
-    createChannel: vi.fn().mockResolvedValue({ 
-      ok: true, 
-      channelId: 'C1234567890', 
-      channelName: 'test-company-inc' 
+    logToChannel: vi
+      .fn()
+      .mockResolvedValue({ ok: true, timestamp: '1234567890.123456' }),
+    createChannel: vi.fn().mockResolvedValue({
+      ok: true,
+      channelId: 'C1234567890',
+      channelName: 'test-company-inc',
     }),
-    getGroupUsers: vi.fn().mockResolvedValue({ ok: true, users: ['U1234567890'] }),
+    getGroupUsers: vi
+      .fn()
+      .mockResolvedValue({ ok: true, users: ['U1234567890'] }),
     inviteGroup: vi.fn().mockResolvedValue({ ok: true, invited: true }),
     inviteGuest: vi.fn().mockResolvedValue({ ok: true, invited: true }),
-  }))
+  })),
 }));
 
 vi.mock('./lib/email', () => ({
-  sendWelcomeEmail: vi.fn().mockResolvedValue({ ok: true })
+  sendWelcomeEmail: vi.fn().mockResolvedValue({ ok: true }),
 }));
 
 // Mock global fetch and Request/Response
-global.Request = global.Request || class Request {
-  url: string;
-  method: string;
-  headers: Map<string, string>;
-  body: ReadableStream | null;
-  
-  constructor(input: string, init?: RequestInit) {
-    this.url = input;
-    this.method = init?.method || 'GET';
-    this.headers = new Map();
-    this.body = null;
-    
-    if (init?.headers) {
-      Object.entries(init.headers as Record<string, string>).forEach(([k, v]) => {
-        this.headers.set(k, v);
-      });
-    }
-    
-    if (init?.body) {
-      this.body = init.body as ReadableStream;
-    }
-  }
+global.Request =
+  global.Request ||
+  (class Request {
+    url: string;
+    method: string;
+    headers: Map<string, string>;
+    body: ReadableStream | null;
 
-  async json() {
-    if (this.body && typeof this.body === 'string') {
+    constructor(input: string, init?: RequestInit) {
+      this.url = input;
+      this.method = init?.method || 'GET';
+      this.headers = new Map();
+      this.body = null;
+
+      if (init?.headers) {
+        Object.entries(init.headers as Record<string, string>).forEach(
+          ([k, v]) => {
+            this.headers.set(k, v);
+          }
+        );
+      }
+
+      if (init?.body) {
+        this.body = init.body as ReadableStream;
+      }
+    }
+
+    async json() {
+      if (this.body && typeof this.body === 'string') {
+        return JSON.parse(this.body);
+      }
+      return {};
+    }
+  } as any);
+
+global.Response =
+  global.Response ||
+  (class Response {
+    status: number;
+    headers: Map<string, string>;
+    body: string;
+
+    constructor(body?: string | null, init?: ResponseInit) {
+      this.body = body || '';
+      this.status = init?.status || 200;
+      this.headers = new Map();
+
+      if (init?.headers) {
+        Object.entries(init.headers as Record<string, string>).forEach(
+          ([k, v]) => {
+            this.headers.set(k, v);
+          }
+        );
+      }
+    }
+
+    async text() {
+      return this.body;
+    }
+
+    async json() {
       return JSON.parse(this.body);
     }
-    return {};
-  }
-} as any;
-
-global.Response = global.Response || class Response {
-  status: number;
-  headers: Map<string, string>;
-  body: string;
-  
-  constructor(body?: string | null, init?: ResponseInit) {
-    this.body = body || '';
-    this.status = init?.status || 200;
-    this.headers = new Map();
-    
-    if (init?.headers) {
-      Object.entries(init.headers as Record<string, string>).forEach(([k, v]) => {
-        this.headers.set(k, v);
-      });
-    }
-  }
-
-  async text() {
-    return this.body;
-  }
-
-  async json() {
-    return JSON.parse(this.body);
-  }
-} as any;
+  } as any);
 
 // Import worker after globals are set
 const workerModule = await import('./index');
@@ -151,7 +163,7 @@ describe('Cloudflare Worker', () => {
         ok: false,
         code: 'VALIDATION_ERROR',
         message: 'Validation failed',
-        errors: ['companyName: Required']
+        errors: ['companyName: Required'],
       });
     });
 
@@ -173,7 +185,7 @@ describe('Cloudflare Worker', () => {
         ok: false,
         code: 'VALIDATION_ERROR',
         message: 'Validation failed',
-        errors: ['email: Invalid email format']
+        errors: ['email: Invalid email format'],
       });
     });
 
@@ -188,7 +200,7 @@ describe('Cloudflare Worker', () => {
       });
 
       const response = await worker.fetch(request, mockEnv);
-      const data = await response.json() as any;
+      const data = (await response.json()) as any;
 
       expect(response.status).toBe(200);
       expect(data.ok).toBe(true);
@@ -206,7 +218,11 @@ describe('Cloudflare Worker', () => {
 
       const response = await worker.fetch(request, mockEnv);
       expect(response.status).toBe(404);
-      const data = (await response.json()) as { ok: boolean; errorCode: string; message: string };
+      const data = (await response.json()) as {
+        ok: boolean;
+        errorCode: string;
+        message: string;
+      };
       expect(data).toEqual({
         ok: false,
         errorCode: 'NOT_FOUND',
@@ -220,9 +236,9 @@ describe('Cloudflare Worker', () => {
       });
 
       const response = await worker.fetch(request, mockEnv);
-      
+
       expect(response.status).toBe(404);
-      
+
       const data = await response.json();
       expect(data).toEqual({
         ok: false,
@@ -242,7 +258,9 @@ describe('Cloudflare Worker', () => {
 
       expect(response.status).toBe(204);
       expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
-      expect(response.headers.get('Access-Control-Allow-Methods')).toBe('GET, POST, OPTIONS');
+      expect(response.headers.get('Access-Control-Allow-Methods')).toBe(
+        'GET, POST, OPTIONS'
+      );
     });
   });
 });
