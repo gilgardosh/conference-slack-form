@@ -83,15 +83,9 @@ function App() {
   return (
     <div className='min-h-screen bg-white dark:bg-gray-900 transition-colors'>
       <div className='container mx-auto px-4 py-8'>
-        <div className='flex justify-between items-center mb-8'>
-          <h1 className='text-3xl font-bold text-gray-900 dark:text-white'>
-            Conference Slack Form
-          </h1>
-          <DarkModeToggle />
-        </div>
-
-        <div className='max-w-md mx-auto'>
-          <div className='flex justify-center mb-6'>
+        <div className='flex justify-between items-start mb-8'>
+          
+          <div className='flex justify-center'>
             <img
               src='/full-dark-logo.svg'
               alt='Company Logo'
@@ -103,9 +97,17 @@ function App() {
               className='h-20 hidden dark:block'
             />
           </div>
+          <DarkModeToggle />
+        </div>
+
+        <div className='max-w-md mx-auto'>
           <div className='bg-gray-50 dark:bg-gray-800 rounded-lg shadow-lg p-6'>
+            <h1 className='text-3xl font-bold text-gray-900 dark:text-white mb-4'>
+              Let&apos;s Continue on Slack
+            </h1>
+            
             <p className='text-gray-600 dark:text-gray-300 mb-6'>
-              Join our conference Slack workspace. We&apos;ll create a dedicated
+              Join our Slack workspace. We&apos;ll create a dedicated
               channel for your company.
             </p>
 

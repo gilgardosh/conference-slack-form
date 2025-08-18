@@ -77,9 +77,6 @@ export function Form({
           placeholder='Enter your company name'
           disabled={isSubmitting}
         />
-        <div className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-          {formData.companyName.length}/67 characters
-        </div>
       </div>
 
       <div>
