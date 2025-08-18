@@ -26,6 +26,12 @@ export interface SlackInviteResult {
   details?: string;
 }
 
+export interface SlackGroupUsersResult {
+  ok: true;
+  users: string[];
+  details?: string;
+}
+
 export type SlackResult<T> = (T & { ok: true }) | SlackError;
 
 /**
@@ -46,6 +52,11 @@ interface SlackChannelCreateResponse extends SlackApiResponse {
 interface SlackConversationInviteResponse extends SlackApiResponse {
   // Slack API response structure for invite
   data?: unknown;
+}
+
+interface SlackGroupUsersResponse extends SlackApiResponse {
+  // Slack API response structure for group users
+  users?: string[];
 }
 
 interface SlackInviteSharedResponse extends SlackApiResponse {
@@ -83,18 +94,34 @@ export class SlackClient {
    */
   private async slackRequest<T extends SlackApiResponse>(
     endpoint: string,
-    body: Record<string, unknown>
+    body: Record<string, unknown>,
+    method: 'GET' | 'POST' = 'POST'
   ): Promise<T | SlackError> {
     try {
+      const url = new URL(`https://slack.com/api/${endpoint}`);
+      if (method === 'GET') {
+        Object.entries(body).forEach(([key, value]) => {
+          url.searchParams.append(key, String(value));
+        });
+      }
       const fetch = this.fetchFn;
-      const response = await fetch(`https://slack.com/api/${endpoint}`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      });
+      const requestContent: RequestInit = method === 'GET'
+        ? {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${this.token}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        : {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${this.token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+          };
+      const response = await fetch(url.toString(), requestContent);
 
       // Handle rate limiting
       if (response.status === 429) {
@@ -211,13 +238,14 @@ export class SlackClient {
    * Invite the configured guild group to a channel
    */
   public async inviteGroup(
-    channelId: string
+    channelId: string,
+    users: string[]
   ): Promise<SlackResult<SlackInviteResult>> {
     const result = await this.slackRequest<SlackConversationInviteResponse>(
       'conversations.invite',
       {
         channel: channelId,
-        users: this.teamId,
+        users: users.join(','),
       }
     );
 
@@ -229,6 +257,29 @@ export class SlackClient {
       ok: true,
       invited: true,
       details: 'Guild group invited to channel',
+    };
+  }
+
+  /**
+   * Get the list of users in the configured guild group
+   */
+  public async getGroupUsers(): Promise<SlackResult<SlackGroupUsersResult>> {
+    const result = await this.slackRequest<SlackGroupUsersResponse>(
+      'usergroups.users.list',
+      {
+        usergroup: this.teamId,
+      },
+      'GET'
+    );
+
+    if ('error' in result) {
+      return result as SlackError;
+    }
+
+    return {
+      ok: true,
+      users: result.users || [],
+      details: 'Guild group users retrieved successfully',
     };
   }
 
