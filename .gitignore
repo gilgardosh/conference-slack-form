@@ -82,6 +82,7 @@ worker/.wrangler/
 worker/dist/
 worker/worker.log
 worker/*.log
+worker/static
 
 # Wrangler build outputs and temporary files
 .wrangler/
