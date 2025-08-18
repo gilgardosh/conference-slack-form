@@ -279,7 +279,7 @@ router.post(
       if (!groupInviteResult.ok) {
         groupInviteError = true;
         await slackClient.logToChannel(
-          `Group invite failed for channel ${channelName} (${channelId}): ${groupInviteResult.error} - ${groupInviteResult.details || ''}`,
+          `Group invite failed for channel #${channelName} (${channelId}): ${groupInviteResult.error} - ${groupInviteResult.details || ''}`,
           'warn'
         );
       }
@@ -289,7 +289,7 @@ router.post(
       if (!guestInviteResult.ok) {
         guestInviteError = true;
         await slackClient.logToChannel(
-          `Guest invite failed for ${email} to channel ${channelName} (${channelId}): ${guestInviteResult.error} - ${guestInviteResult.details || ''}`,
+          `Guest invite failed for ${email} to channel #${channelName} (${channelId}): ${guestInviteResult.error} - ${guestInviteResult.details || ''}`,
           'warn'
         );
       }
@@ -319,8 +319,8 @@ router.post(
 
       const logMessage =
         partialFailures.length > 0
-          ? `Submission processed for ${email} (company: ${validationResult.value.companyName} -> ${sanitizedCompanyName}), channel: ${channelName} (${channelId}). Partial failures: ${partialFailures.join(', ')}`
-          : `Submission successfully processed for ${email} (company: ${validationResult.value.companyName} -> ${sanitizedCompanyName}), channel: ${channelName} (${channelId})`;
+          ? `Submission processed for ${email} (company: ${validationResult.value.companyName} -> ${sanitizedCompanyName}), channel: #${channelName} (${channelId}). Partial failures: ${partialFailures.join(', ')}`
+          : `Submission successfully processed for ${email} (company: ${validationResult.value.companyName} -> ${sanitizedCompanyName}), channel: #${channelName} (${channelId})`;
 
       await slackClient.logToChannel(
         logMessage,
