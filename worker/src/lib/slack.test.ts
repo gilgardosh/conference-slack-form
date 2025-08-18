@@ -17,6 +17,7 @@ describe('SlackClient', () => {
   
   const TEST_TOKEN = 'xoxb-test-token';
   const TEST_TEAM_ID = 'S1234567890';
+  const TEST_USER_ID = 'U1234567890';
   const TEST_LOG_CHANNEL = 'C1234567890';
 
   beforeEach(() => {
@@ -224,7 +225,7 @@ describe('SlackClient', () => {
         json: () => Promise.resolve(mockResponse)
       });
 
-      const result = await slackClient.inviteGroup('C1234567890');
+      const result = await slackClient.inviteGroup('C1234567890', ['U1234567890']);
 
       expect(result).toEqual({
         ok: true,
@@ -242,7 +243,7 @@ describe('SlackClient', () => {
           },
           body: JSON.stringify({
             channel: 'C1234567890',
-            users: TEST_TEAM_ID
+            users: TEST_USER_ID
           })
         }
       );
@@ -261,7 +262,7 @@ describe('SlackClient', () => {
         json: () => Promise.resolve(errorResponse)
       });
 
-      const result = await slackClient.inviteGroup('C1234567890');
+      const result = await slackClient.inviteGroup('C1234567890', ['U1234567890']);
 
       expect(result).toEqual({
         ok: false,

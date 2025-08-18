@@ -16,6 +16,7 @@ vi.mock('../lib/slack', () => ({
     }),
     inviteGroup: vi.fn().mockResolvedValue({ ok: true, invited: true }),
     inviteGuest: vi.fn().mockResolvedValue({ ok: true, invited: true }),
+    getGroupUsers: vi.fn().mockResolvedValue({ ok: true, users: ['U1234567890'] }),
   })),
 }));
 

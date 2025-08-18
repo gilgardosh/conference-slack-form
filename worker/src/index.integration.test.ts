@@ -12,6 +12,9 @@ const mockSlackClient = {
   inviteGroup: vi.fn(),
   inviteGuest: vi.fn(),
   logToChannel: vi.fn(),
+  getGroupUsers: vi
+    .fn()
+    .mockResolvedValue({ ok: true, users: ['U1234567890'] }),
 };
 
 // const mockEmailClient = {
@@ -30,7 +33,7 @@ vi.mock('./lib/slack', () => ({
 describe('/api/submit endpoint integration tests', () => {
   const mockEnv: Env = {
     ASSETS: {
-      fetch: vi.fn(async () => new Response('')), // Mock Fetcher
+      fetch: vi.fn().mockResolvedValue(new Response('mock asset')),
     } as unknown as Fetcher,
     SLACK_BOT_TOKEN: 'test-bot-token',
     SLACK_TEAM_ID: 'test-team-id',
@@ -42,31 +45,31 @@ describe('/api/submit endpoint integration tests', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Default successful mocks
     mockSlackClient.createChannel.mockResolvedValue({
       ok: true,
       channelId: 'C123456789',
       channelName: 'ext-theguild-test-company',
     });
-    
+
     mockSlackClient.inviteGroup.mockResolvedValue({
       ok: true,
       invited: true,
       details: 'Guild group invited to channel',
     });
-    
+
     mockSlackClient.inviteGuest.mockResolvedValue({
       ok: true,
       invited: true,
       details: 'Guest invite sent',
     });
-    
+
     mockSlackClient.logToChannel.mockResolvedValue({
       ok: true,
       timestamp: '1234567890.123',
     });
-    
+
     // mockEmailClient.sendWelcomeEmail.mockResolvedValue({
     //   ok: true,
     // });
@@ -98,8 +101,11 @@ describe('/api/submit endpoint integration tests', () => {
 
     // Verify the flow was called in the correct order
     expect(mockSlackClient.createChannel).toHaveBeenCalledWith('test-company');
-    expect(mockSlackClient.inviteGroup).toHaveBeenCalledWith('C123456789');
-    expect(mockSlackClient.inviteGuest).toHaveBeenCalledWith('test@company.com', 'C123456789');
+    expect(mockSlackClient.inviteGroup).toHaveBeenCalledWith('C123456789', ['U1234567890']);
+    expect(mockSlackClient.inviteGuest).toHaveBeenCalledWith(
+      'test@company.com',
+      'C123456789'
+    );
     // expect(mockEmailClient.sendWelcomeEmail).toHaveBeenCalledWith({
     //   companyName: 'Test Company',
     //   email: 'test@company.com',
@@ -107,7 +113,9 @@ describe('/api/submit endpoint integration tests', () => {
     //   channelUrl: 'https://app.slack.com/client/test-team-id/C123456789',
     // }, 'test-postmark-key');
     expect(mockSlackClient.logToChannel).toHaveBeenCalledWith(
-      expect.stringContaining('Submission successfully processed for test@company.com'),
+      expect.stringContaining(
+        'Submission successfully processed for test@company.com'
+      ),
       'info'
     );
   });
@@ -170,7 +178,10 @@ describe('/api/submit endpoint integration tests', () => {
       }),
     });
 
-    const response = await worker.fetch(secondRequest, { ...mockEnv, RATE_LIMIT: '1' });
+    const response = await worker.fetch(secondRequest, {
+      ...mockEnv,
+      RATE_LIMIT: '1',
+    });
     const result = await response.json();
 
     expect(response.status).toBe(429);
@@ -214,7 +225,10 @@ describe('/api/submit endpoint integration tests', () => {
       }),
     });
 
-    const response = await worker.fetch(secondRequest, { ...mockEnv, RATE_LIMIT: '1' });
+    const response = await worker.fetch(secondRequest, {
+      ...mockEnv,
+      RATE_LIMIT: '1',
+    });
     const result = await response.json();
 
     expect(response.status).toBe(429);
@@ -411,12 +425,12 @@ describe('/api/submit endpoint integration tests', () => {
       ok: false,
       error: 'group_error',
     });
-    
+
     mockSlackClient.inviteGuest.mockResolvedValue({
       ok: false,
       error: 'guest_error',
     });
-    
+
     // mockEmailClient.sendWelcomeEmail.mockResolvedValue({
     //   ok: false,
     //   error: 'email_error',
@@ -488,7 +502,7 @@ describe('/api/submit endpoint integration tests', () => {
     });
 
     const response = await worker.fetch(request, mockEnv);
-    const result = await response.json() as any;
+    const result = (await response.json()) as any;
 
     expect(response.status).toBe(200);
     expect(result.sanitizedCompanyName).toBe('cafe-co-nino');

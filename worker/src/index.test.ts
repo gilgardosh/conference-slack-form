@@ -10,6 +10,7 @@ vi.mock('./lib/slack', () => ({
       channelId: 'C1234567890', 
       channelName: 'test-company-inc' 
     }),
+    getGroupUsers: vi.fn().mockResolvedValue({ ok: true, users: ['U1234567890'] }),
     inviteGroup: vi.fn().mockResolvedValue({ ok: true, invited: true }),
     inviteGuest: vi.fn().mockResolvedValue({ ok: true, invited: true }),
   }))
