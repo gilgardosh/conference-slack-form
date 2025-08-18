@@ -20,3 +20,7 @@ account_id = "6d5bc18cd8d13babe7ed321adba3d8ae"
 # POSTMARK_API_KEY - Postmark server API key for sending emails
 # RATE_LIMIT - Maximum submissions per window per IP/email (e.g., "5")
 # RATE_LIMIT_WINDOW_SEC - Rate limit window duration in seconds (e.g., "3600")
+
+[[routes]]
+pattern = "connect.the-guild.dev/*"
+zone_name = "the-guild.dev"
