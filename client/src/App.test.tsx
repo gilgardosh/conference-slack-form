@@ -6,9 +6,9 @@ describe('App', () => {
   it('should render the form', () => {
     const { container } = render(<App />);
 
-    expect(screen.getByText('Conference Slack Form')).toBeDefined();
+    expect(screen.getByText("Let's Continue on Slack")).toBeDefined();
     expect(
-      screen.getByText(/Join our conference Slack workspace/)
+      screen.getByText(/Join our Slack workspace/)
     ).toBeDefined();
     expect(screen.getByLabelText('Company Name')).toBeDefined();
     expect(screen.getByLabelText('Email Address')).toBeDefined();
