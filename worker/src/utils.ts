@@ -1,3 +1,6 @@
+import type { Env } from './types';
+import { getCorsHeaders } from './cors';
+
 /**
  * Generate a simple UUID v4 using crypto.randomUUID if available,
  * fallback to a simple implementation
@@ -20,6 +23,7 @@ export function generateId(): string {
  * Create a JSON response with CORS headers
  */
 export function jsonResponse(
+  env: Env,
   data: unknown,
   status = 200,
   headers: Record<string, string> = {}
@@ -28,9 +32,7 @@ export function jsonResponse(
     status,
     headers: {
       'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      ...getCorsHeaders(env),
       ...headers,
     },
   });
@@ -40,6 +42,7 @@ export function jsonResponse(
  * Create an error response
  */
 export function errorResponse(
+  env: Env,
   errorCode: string,
   message: string,
   status = 400,
@@ -52,7 +55,7 @@ export function errorResponse(
     ...(metadata && { metadata }),
   };
 
-  return jsonResponse(body, status);
+  return jsonResponse(env, body, status);
 }
 
 /**

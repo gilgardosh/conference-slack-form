@@ -7,9 +7,7 @@ describe('App', () => {
     const { container } = render(<App />);
 
     expect(screen.getByText("Let's Continue on Slack")).toBeDefined();
-    expect(
-      screen.getByText(/Join our Slack workspace/)
-    ).toBeDefined();
+    expect(screen.getByText(/Join our Slack workspace/)).toBeDefined();
     expect(screen.getByLabelText('Company Name')).toBeDefined();
     expect(screen.getByLabelText('Email Address')).toBeDefined();
     expect(container.querySelector('button[type="submit"]')).toBeDefined();

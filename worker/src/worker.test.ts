@@ -1,6 +1,21 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { generateId, jsonResponse, errorResponse } from './utils';
 import { sanitizeCompanyName } from './utils/validation';
+import type { Env } from './types';
+
+const mockEnv = (corsOrigin = '*'): Env => ({
+  ASSETS: {
+    fetch: vi.fn(),
+    connect: vi.fn(),
+  } as unknown as Env['ASSETS'],
+  SLACK_BOT_TOKEN: 'test-token',
+  SLACK_TEAM_ID: 'test-team-id',
+  SLACK_LOG_CHANNEL_ID: 'test-log-channel-id',
+  POSTMARK_API_KEY: 'test-postmark-key',
+  CORS_ALLOWED_ORIGIN: corsOrigin,
+  RATE_LIMIT: '10',
+  RATE_LIMIT_WINDOW_SEC: '3600',
+});
 
 describe('Worker Utils', () => {
   describe('generateId', () => {
@@ -39,7 +54,8 @@ describe('Worker Utils', () => {
   describe('jsonResponse', () => {
     it('should create a Response with JSON content type', () => {
       const data = { ok: true, message: 'test' };
-      const response = jsonResponse(data);
+      const env = mockEnv();
+      const response = jsonResponse(env, data);
 
       expect(response).toBeInstanceOf(Response);
       expect(response.headers.get('Content-Type')).toBe('application/json');
@@ -48,7 +64,13 @@ describe('Worker Utils', () => {
 
   describe('errorResponse', () => {
     it('should create error response with correct structure', () => {
-      const response = errorResponse('TEST_ERROR', 'Test error message', 400);
+      const env = mockEnv();
+      const response = errorResponse(
+        env,
+        'TEST_ERROR',
+        'Test error message',
+        400
+      );
 
       expect(response).toBeInstanceOf(Response);
       expect(response.status).toBe(400);

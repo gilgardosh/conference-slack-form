@@ -10,6 +10,7 @@ export interface Env {
   POSTMARK_API_KEY: string;
   RATE_LIMIT: string; // Number as string from environment
   RATE_LIMIT_WINDOW_SEC: string; // Number as string from environment
+  CORS_ALLOWED_ORIGIN?: string;
 }
 
 /**

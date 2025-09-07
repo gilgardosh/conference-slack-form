@@ -7,36 +7,23 @@ import {
 } from './utils/validation';
 import { checkIpRateLimit, checkEmailRateLimit } from './lib/rateLimiter';
 import { createSlackClient } from './lib/slack';
+import { handleCors } from './cors';
 // import { sendWelcomeEmail } from './lib/email';
 
 // Create router instance
 const router = Router();
 
 /**
- * CORS preflight handler
- */
-router.options('*', () => {
-  return new Response(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    },
-  });
-});
-
-/**
  * Health check endpoint
  * GET /api/ping
  */
-router.get('/api/ping', (): Response => {
+router.get('/api/ping', (_request: Request, env: Env): Response => {
   const response: PingResponse = {
     ok: true,
     version: '0.1.0',
   };
 
-  return jsonResponse(response);
+  return jsonResponse(env, response);
 });
 
 /**
@@ -45,7 +32,7 @@ router.get('/api/ping', (): Response => {
  */
 router.post(
   '/api/sanitize-preview',
-  async (request: Request): Promise<Response> => {
+  async (request: Request, env: Env): Promise<Response> => {
     try {
       // Parse request body
       let body: unknown;
@@ -54,6 +41,7 @@ router.post(
         body = await request.json();
       } catch {
         return errorResponse(
+          env,
           'INVALID_JSON',
           'Invalid JSON in request body',
           400
@@ -83,14 +71,14 @@ router.post(
 
       const { sanitizedCompanyName } = validationResult.value;
 
-      return jsonResponse({
+      return jsonResponse(env, {
         ok: true,
         sanitizedCompanyName,
       });
     } catch (error) {
       console.error('Unexpected error in /api/sanitize-preview:', error);
 
-      return errorResponse('INTERNAL_ERROR', 'Internal server error', 500);
+      return errorResponse(env, 'INTERNAL_ERROR', 'Internal server error', 500);
     }
   }
 );
@@ -155,6 +143,7 @@ router.post(
         body = await request.json();
       } catch {
         return errorResponse(
+          env,
           'INVALID_JSON',
           'Invalid JSON in request body',
           400
@@ -246,6 +235,7 @@ router.post(
         );
 
         return errorResponse(
+          env,
           'SLACK_ERROR',
           'Failed to create Slack channel',
           502
@@ -268,7 +258,12 @@ router.post(
           'error'
         );
 
-        return errorResponse('SLACK_ERROR', 'Failed to invite team users', 502);
+        return errorResponse(
+          env,
+          'SLACK_ERROR',
+          'Failed to invite team users',
+          502
+        );
       }
 
       // 7. Invite @guild group
@@ -342,7 +337,7 @@ router.post(
       //   response.emailSent = false;
       // }
 
-      return jsonResponse(response, 200, {
+      return jsonResponse(env, response, 200, {
         'X-RateLimit-Limit': rateLimit.toString(),
         'X-RateLimit-Remaining-IP': ipRateLimit.remaining.toString(),
         'X-RateLimit-Remaining-Email': emailRateLimit.remaining.toString(),
@@ -370,7 +365,7 @@ router.post(
         console.error('Failed to log error to Slack:', logError);
       }
 
-      return errorResponse('INTERNAL_ERROR', 'Internal server error', 500);
+      return errorResponse(env, 'INTERNAL_ERROR', 'Internal server error', 500);
     }
   }
 );
@@ -378,8 +373,8 @@ router.post(
 /**
  * Catch-all for API routes that don't exist
  */
-router.all('/api/*', (): Response => {
-  return errorResponse('NOT_FOUND', 'API endpoint not found', 404);
+router.all('/api/*', (request: Request, env: Env): Response => {
+  return errorResponse(env, 'NOT_FOUND', 'API endpoint not found', 404);
 });
 
 /**
@@ -395,11 +390,17 @@ router.get('*', (request: Request, env: Env) => {
  */
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
+    // Handle CORS preflight requests
+    const corsResponse = handleCors(request, env);
+    if (corsResponse) {
+      return corsResponse;
+    }
+
     try {
       return await router.fetch(request, env);
     } catch (error) {
       console.error('Router error:', error);
-      return errorResponse('INTERNAL_ERROR', 'Internal server error', 500);
+      return errorResponse(env, 'INTERNAL_ERROR', 'Internal server error', 500);
     }
   },
 };
