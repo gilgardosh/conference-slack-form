@@ -25,8 +25,5 @@ account_id = "6d5bc18cd8d13babe7ed321adba3d8ae"
 pattern = "connect.the-guild.dev/*"
 zone_name = "the-guild.dev"
 
-[env.development.vars]
-CORS_ALLOWED_ORIGIN = "http://localhost:5173"
-
-[env.production.vars]
-CORS_ALLOWED_ORIGIN = "https://connect.the-guild.dev"
+[vars]
+CORS_ALLOWED_ORIGIN = https://connect.the-guild.dev"
