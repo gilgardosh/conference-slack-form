@@ -26,4 +26,4 @@ pattern = "connect.the-guild.dev/*"
 zone_name = "the-guild.dev"
 
 [vars]
-CORS_ALLOWED_ORIGIN = https://connect.the-guild.dev"
+CORS_ALLOWED_ORIGIN = "https://connect.the-guild.dev"
